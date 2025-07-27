@@ -1,0 +1,59 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+
+@layer base {
+  * {
+    @apply border-gray-700;
+  }
+  
+  body {
+    @apply bg-gray-900 text-orange-100 font-sans;
+    font-family: 'Inter', sans-serif;
+  }
+  
+  .font-medieval {
+    font-family: 'Cinzel', serif;
+  }
+}
+
+@layer components {
+  .bonfire-glow {
+    @apply shadow-lg shadow-orange-500/20;
+    background: linear-gradient(135deg, #ea580c 0%, #dc2626 50%, #7c2d12 100%);
+  }
+  
+  .ember-border {
+    @apply border border-orange-500/30 bg-gray-800/50 backdrop-blur-sm;
+    box-shadow: 0 0 20px rgba(234, 88, 12, 0.1);
+  }
+  
+  .flame-text {
+    @apply bg-gradient-to-r from-orange-400 via-red-500 to-orange-600 bg-clip-text text-transparent;
+  }
+  
+  .ash-bg {
+    @apply bg-gray-800/90 border border-gray-700/50;
+    background-image: radial-gradient(circle at 1px 1px, rgba(251, 146, 60, 0.05) 1px, transparent 0);
+    background-size: 20px 20px;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-gray-800;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-orange-600 rounded;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-orange-500;
+}

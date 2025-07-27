@@ -42,10 +42,43 @@ app.whenReady().then(() => {
   saveFileManager = new SaveFileManager();
   gitManager = new GitManager();
 
+  // Set up auto-sync if enabled
+  setupAutoSync();
+
   app.on('activate', function () {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
   });
 });
+
+let autoSyncInterval: NodeJS.Timeout | null = null;
+
+function setupAutoSync() {
+  const config = store.store;
+  if (config.autoSync && config.savePath) {
+    const interval = (config.syncInterval || 5) * 60 * 1000; // Convert minutes to ms
+    
+    saveFileManager.startWatching(config.savePath, async () => {
+      // Debounce rapid file changes
+      if (autoSyncInterval) {
+        clearTimeout(autoSyncInterval);
+      }
+      
+      autoSyncInterval = setTimeout(async () => {
+        try {
+          await saveFileManager.syncSaves(config.savePath, config.backupPath || path.join(os.homedir(), '.bonfire-backup'), 'auto');
+          await gitManager.commitAndPush('Automatic save backup');
+          
+          // Notify renderer
+          if (mainWindow) {
+            mainWindow.webContents.send('auto-sync-completed');
+          }
+        } catch (error) {
+          console.error('Auto-sync failed:', error);
+        }
+      }, 2000); // Wait 2 seconds after last change
+    });
+  }
+}
 
 app.on('window-all-closed', function () {
   if (process.platform !== 'darwin') app.quit();
@@ -58,6 +91,13 @@ ipcMain.handle('get-config', () => {
 
 ipcMain.handle('set-config', (_, key: string, value: any) => {
   store.set(key, value);
+  
+  // Restart auto-sync if config changed
+  if (key === 'autoSync' || key === 'savePath' || key === 'syncInterval') {
+    saveFileManager.stopWatching();
+    setupAutoSync();
+  }
+  
   return true;
 });
 
@@ -92,13 +132,18 @@ ipcMain.handle('init-git-repo', async (_, repoUrl: string) => {
 
 ipcMain.handle('sync-saves', async (_, mode: 'manual' | 'auto') => {
   const savePath = store.get('savePath') as string;
-  const backupPath = store.get('backupPath') as string;
+  const backupPath = store.get('backupPath') as string || path.join(os.homedir(), '.bonfire-backup');
   
-  if (!savePath || !backupPath) {
-    throw new Error('Paths not configured');
+  if (!savePath) {
+    throw new Error('Save path not configured');
   }
   
-  return await saveFileManager.syncSaves(savePath, backupPath, mode);
+  const syncSuccess = await saveFileManager.syncSaves(savePath, backupPath, mode);
+  if (syncSuccess) {
+    await gitManager.commitAndPush(`${mode === 'manual' ? 'Manual' : 'Automatic'} save backup`);
+  }
+  
+  return syncSuccess;
 });
 
 ipcMain.handle('get-sync-status', async () => {

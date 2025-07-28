@@ -2,18 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { Shield, Upload, Download, Clock, AlertTriangle, CheckCircle, Flame, RotateCcw, Cloud } from 'lucide-react';
 import { AppConfig, SyncStatus, BackupInfo } from '../../types';
 
-interface DashboardProps {
-  onConfigurationChange: () => void;
-}
+interface DashboardProps {}
 
-const Dashboard: React.FC<DashboardProps> = ({ onConfigurationChange }) => {
+const Dashboard: React.FC<DashboardProps> = () => {
   const [config, setConfig] = useState<AppConfig>({});
   const [syncStatus, setSyncStatus] = useState<SyncStatus | null>(null);
   const [backupInfo, setBackupInfo] = useState<BackupInfo | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isRestoring, setIsRestoring] = useState(false);
   const [isPulling, setIsPulling] = useState(false);
-  const [lastSync, setLastSync] = useState<Date | null>(null);
 
   useEffect(() => {
     const initDashboard = async () => {

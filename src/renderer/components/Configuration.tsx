@@ -8,7 +8,6 @@ interface ConfigurationProps {
 
 const Configuration: React.FC<ConfigurationProps> = ({ onConfigurationChange }) => {
   const [config, setConfig] = useState<AppConfig>({});
-  const [isLoading, setIsLoading] = useState(false);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'success' | 'error'>('idle');
   const [detectStatus, setDetectStatus] = useState<'idle' | 'detecting' | 'success' | 'error'>('idle');
 

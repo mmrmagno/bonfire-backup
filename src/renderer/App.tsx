@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Flame, Settings, Activity, Minimize, Maximize, X } from 'lucide-react';
+import { Flame, Settings, Activity } from 'lucide-react';
 import Dashboard from './components/Dashboard';
 import Configuration from './components/Configuration';
 import SyncStatus from './components/SyncStatus';

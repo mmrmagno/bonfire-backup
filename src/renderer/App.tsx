@@ -44,7 +44,7 @@ function App() {
   const checkConfiguration = async () => {
     try {
       const config = await window.electronAPI.getConfig();
-      setIsConfigured(config.savePath && config.repoUrl);
+      setIsConfigured(!!(config.savePath && config.repoUrl));
     } catch (error) {
       console.error('Failed to check configuration:', error);
     }

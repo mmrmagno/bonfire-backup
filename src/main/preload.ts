@@ -4,7 +4,7 @@ console.log('Preload script loading...');
 
 contextBridge.exposeInMainWorld('electronAPI', {
   getConfig: () => ipcRenderer.invoke('get-config'),
-  setConfig: (key: string, value: string | boolean) => ipcRenderer.invoke('set-config', key, value),
+  setConfig: (key: string, value: string | boolean | number | null | undefined) => ipcRenderer.invoke('set-config', key, value),
   detectSavePath: () => ipcRenderer.invoke('detect-save-path'),
   selectSavePath: () => ipcRenderer.invoke('select-save-path'),
   initGitRepo: (repoUrl: string) => ipcRenderer.invoke('init-git-repo', repoUrl),

@@ -117,7 +117,7 @@ ipcMain.handle('get-config', () => {
   return store.store;
 });
 
-ipcMain.handle('set-config', (_, key: string, value: string | boolean | null | undefined) => {
+ipcMain.handle('set-config', (_, key: string, value: string | boolean | number | null | undefined) => {
   // Handle null/undefined values properly for electron-store
   if (value === null || value === undefined || value === '') {
     if (store.has(key)) {

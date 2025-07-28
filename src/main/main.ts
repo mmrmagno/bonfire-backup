@@ -148,12 +148,9 @@ ipcMain.handle('select-save-path', async () => {
   
   if (!result.canceled && result.filePaths.length > 0) {
     const selectedPath = result.filePaths[0];
-    if (await saveFileManager.validateSavePath(selectedPath)) {
-      store.set('savePath', selectedPath);
-      return selectedPath;
-    } else {
-      throw new Error('Invalid Dark Souls III save directory');
-    }
+    // Accept any valid directory - save files may not exist yet on fresh devices
+    store.set('savePath', selectedPath);
+    return selectedPath;
   }
   return null;
 });

@@ -130,4 +130,4 @@ jobs:
         prerelease: false
         files: |
           ./artifacts/linux/bonfire-backup-linux.tar.gz
-          ./artifacts/windows/Bonfire Backup Setup 1.0.0.exe
+          ./artifacts/windows/*.exe

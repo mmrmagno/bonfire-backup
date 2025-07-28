@@ -248,6 +248,3 @@ ipcMain.handle('get-backup-info', async () => {
   return await saveFileManager.getBackupInfo(backupPath);
 });
 
-ipcMain.handle('pull-from-remote', async () => {
-  return await gitManager.syncWithRemote();
-});

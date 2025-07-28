@@ -176,25 +176,45 @@ ipcMain.handle('sync-saves', async (_, mode: 'manual' | 'auto') => {
     throw new Error('Save path not configured');
   }
   
-  // Initialize git repository if not already done
-  const initResult = await gitManager.initializeRepository(backupPath, repoUrl);
-  if (!initResult && repoUrl) {
-    throw new Error('Failed to initialize git repository. Check your repository URL and branch settings.');
-  }
-  
-  const syncSuccess = await saveFileManager.syncSaves(savePath, backupPath, mode);
-  if (syncSuccess) {
-    const commitResult = await gitManager.commitAndPush(`${mode === 'manual' ? 'Manual' : 'Automatic'} save backup`);
-    if (!commitResult && repoUrl) {
-      throw new Error('Save files backed up locally, but failed to sync with remote repository. Check your repository URL and branch settings.');
+  try {
+    // Initialize git repository if not already done
+    const initResult = await gitManager.initializeRepository(backupPath, repoUrl);
+    if (!initResult && repoUrl) {
+      throw new Error('Failed to initialize git repository. Check your repository URL and branch settings.');
     }
+    
+    const syncSuccess = await saveFileManager.syncSaves(savePath, backupPath, mode);
+    if (syncSuccess && repoUrl) {
+      try {
+        const commitResult = await gitManager.commitAndPush(`${mode === 'manual' ? 'Manual' : 'Automatic'} save backup`);
+        if (!commitResult) {
+          throw new Error('Failed to commit and push to remote repository');
+        }
+      } catch (gitError) {
+        // Save was successful locally, but git failed
+        console.error('Git operation failed:', gitError);
+        throw new Error(`Save files backed up locally, but failed to sync with remote repository: ${(gitError as Error).message}`);
+      }
+    }
+    
+    return syncSuccess;
+  } catch (error) {
+    console.error('Sync operation failed:', error);
+    throw error; // Re-throw the original error with its message
   }
-  
-  return syncSuccess;
 });
 
 ipcMain.handle('get-sync-status', async () => {
   return await gitManager.getStatus();
+});
+
+ipcMain.handle('pull-from-remote', async () => {
+  const repoUrl = store.get('repoUrl') as string;
+  if (!repoUrl) {
+    throw new Error('No remote repository configured');
+  }
+  
+  return await gitManager.syncWithRemote();
 });
 
 ipcMain.handle('minimize-window', () => {

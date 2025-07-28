@@ -68,20 +68,58 @@ node_modules/
         }
         await this.git.addRemote('origin', repoUrl);
         
-        // If it's a new repo, try to push the initial commit
-        if (isNewRepo) {
-          try {
-            await this.git.push(['-u', 'origin', 'main']);
-          } catch (pushError) {
-            // If remote has content, pull it first
+        // Always try to fetch from remote first to check if it has content
+        try {
+          await this.git.fetch('origin');
+          
+          // Check if remote has a main branch
+          const remoteBranches = await this.git.branch(['-r']);
+          const hasRemoteMain = remoteBranches.all.includes('origin/main');
+          
+          if (hasRemoteMain) {
+            // Remote has content, pull it
             try {
-              await this.git.pull('origin', 'main', ['--allow-unrelated-histories']);
+              if (isNewRepo) {
+                // For new repos, we need to pull with allow-unrelated-histories
+                await this.git.pull('origin', 'main', ['--allow-unrelated-histories']);
+                console.log('✅ Successfully pulled existing backups from remote repository');
+              } else {
+                // For existing repos, sync normally
+                await this.git.pull('origin', 'main');
+                console.log('✅ Successfully synced with remote repository');
+              }
             } catch (pullError) {
-              console.warn('Could not pull from remote:', pullError);
+              console.error('❌ Failed to pull from remote:', pullError);
+              throw new Error(`Failed to pull existing backups from remote repository: ${(pullError as Error).message}`);
+            }
+          } else if (isNewRepo) {
+            // Remote is empty, push our initial commit
+            try {
+              await this.git.push(['-u', 'origin', 'main']);
+              console.log('✅ Successfully pushed initial commit to remote repository');
+            } catch (pushError) {
+              console.error('❌ Failed to push to remote:', pushError);
+              throw new Error(`Failed to push to remote repository: ${(pushError as Error).message}`);
             }
           }
-        } else {
-          // Existing repo, try to sync with remote
+        } catch (fetchError) {
+          // If fetch fails, the remote might not exist or be accessible
+          console.error('❌ Failed to fetch from remote:', fetchError);
+          const errorMsg = (fetchError as Error).message;
+          
+          if (errorMsg.includes('Could not resolve host') || errorMsg.includes('network')) {
+            throw new Error('Network connection failed. Please check your internet connection and try again.');
+          } else if (errorMsg.includes('Authentication failed') || errorMsg.includes('access denied')) {
+            throw new Error('Authentication failed. Please check your repository URL and access permissions.');
+          } else if (errorMsg.includes('Repository not found') || errorMsg.includes('does not exist')) {
+            throw new Error('Repository not found. Please verify your repository URL is correct.');
+          } else {
+            throw new Error(`Cannot connect to remote repository: ${errorMsg}`);
+          }
+        }
+        
+        // If not a new repo, ensure we're synced
+        if (!isNewRepo) {
           await this.syncWithRemote();
         }
       }
@@ -95,7 +133,7 @@ node_modules/
 
   async syncWithRemote(): Promise<boolean> {
     if (!this.git || !this.repoPath) {
-      return false;
+      throw new Error('Git repository not initialized. Please configure your repository URL first.');
     }
 
     try {
@@ -107,20 +145,32 @@ node_modules/
       if (status.behind && status.behind > 0) {
         // Pull latest changes
         await this.git.pull('origin', 'main');
+        console.log('✅ Pulled latest changes from remote repository');
         return true;
+      }
+      
+      // If we're ahead, try to push
+      if (status.ahead && status.ahead > 0) {
+        try {
+          await this.git.push('origin', 'main');
+          console.log('✅ Pushed local changes to remote repository');
+        } catch (pushError) {
+          console.warn('Could not push to remote:', pushError);
+          // Don't fail here, we still synced down successfully
+        }
       }
       
       return true;
     } catch (error) {
       console.error('Sync with remote failed:', error);
-      return false;
+      throw new Error(`Failed to sync with remote repository: ${(error as Error).message}`);
     }
   }
 
   async commitAndPush(message: string = 'Save file backup'): Promise<boolean> {
     if (!this.git || !this.repoPath) {
       console.warn('Git not initialized, skipping commit');
-      return false;
+      throw new Error('Git repository not initialized. Please configure your repository URL first.');
     }
 
     try {
@@ -158,7 +208,7 @@ node_modules/
       return true;
     } catch (error) {
       console.error('Git commit failed:', error);
-      return false;
+      throw new Error(`Failed to commit changes: ${(error as Error).message}`);
     }
   }
 
@@ -174,7 +224,8 @@ node_modules/
         hasChanges: false,
         ahead: 0,
         behind: 0,
-        files: []
+        files: [],
+        lastCommit: 'Repository not initialized'
       };
     }
 

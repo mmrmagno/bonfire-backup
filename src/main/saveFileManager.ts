@@ -100,10 +100,21 @@ export class SaveFileManager {
         file.includes('DRAKS0005')
       );
 
+      if (saveFiles.length === 0) {
+        throw new Error('No Dark Souls III save files found in the specified directory. Please verify your save path is correct.');
+      }
+
       for (const file of saveFiles) {
         const sourcePath = path.join(savePath, file);
         const destPath = path.join(backupPath, file);
-        await fs.copyFile(sourcePath, destPath);
+        
+        try {
+          // Check if source file exists and is readable
+          await fs.access(sourcePath, fs.constants.R_OK);
+          await fs.copyFile(sourcePath, destPath);
+        } catch (fileError) {
+          throw new Error(`Failed to backup save file "${file}": ${(fileError as Error).message}`);
+        }
       }
 
       // Add timestamp info
@@ -122,7 +133,7 @@ export class SaveFileManager {
       return true;
     } catch (error) {
       console.error('Sync failed:', error);
-      return false;
+      throw new Error(`Failed to sync save files: ${(error as Error).message}`);
     }
   }
 
@@ -204,7 +215,7 @@ export class SaveFileManager {
       return true;
     } catch (error) {
       console.error('Restore failed:', error);
-      return false;
+      throw new Error(`Failed to restore save files: ${(error as Error).message}`);
     }
   }
 

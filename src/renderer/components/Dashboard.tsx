@@ -14,6 +14,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onConfigurationChange: _ }) => {
   const [isRestoring, setIsRestoring] = useState(false);
   const [isPulling, setIsPulling] = useState(false);
   const [lastSync, setLastSync] = useState<Date | null>(null);
+  const [syncMessage, setSyncMessage] = useState<string>('');
   void lastSync; // Suppress TS6133 warning
 
   useEffect(() => {
@@ -58,15 +59,23 @@ const Dashboard: React.FC<DashboardProps> = ({ onConfigurationChange: _ }) => {
 
   const handleManualSync = async () => {
     setIsLoading(true);
+    setSyncMessage('');
     try {
       const success = await window.electronAPI.syncSaves('manual');
       if (success) {
         setLastSync(new Date());
+        setSyncMessage('✅ Backup completed successfully!');
         await loadSyncStatus();
         await loadBackupInfo();
+        
+        // Clear success message after 3 seconds
+        setTimeout(() => setSyncMessage(''), 3000);
       }
     } catch (error) {
       console.error('Manual sync failed:', error);
+      setSyncMessage(`❌ Sync failed: ${(error as Error).message}`);
+      // Clear error message after 5 seconds
+      setTimeout(() => setSyncMessage(''), 5000);
     } finally {
       setIsLoading(false);
     }
@@ -96,14 +105,19 @@ const Dashboard: React.FC<DashboardProps> = ({ onConfigurationChange: _ }) => {
 
   const handlePullFromRemote = async () => {
     setIsPulling(true);
+    setSyncMessage('');
     try {
       const success = await window.electronAPI.pullFromRemote();
       if (success) {
+        setSyncMessage('✅ Successfully pulled latest backups from remote!');
         await loadSyncStatus();
         await loadBackupInfo();
+        setTimeout(() => setSyncMessage(''), 3000);
       }
     } catch (error) {
       console.error('Pull failed:', error);
+      setSyncMessage(`❌ Pull failed: ${(error as Error).message}`);
+      setTimeout(() => setSyncMessage(''), 5000);
     } finally {
       setIsPulling(false);
     }
@@ -229,6 +243,17 @@ const Dashboard: React.FC<DashboardProps> = ({ onConfigurationChange: _ }) => {
               <p className="text-sm text-orange-300 truncate">{syncStatus.lastCommit}</p>
             </div>
           )}
+        </div>
+      )}
+
+      {/* Sync Message */}
+      {syncMessage && (
+        <div className={`ember-border rounded-lg p-4 text-center ${
+          syncMessage.startsWith('✅') 
+            ? 'bg-green-900/20 border-green-500/30 text-green-300' 
+            : 'bg-red-900/20 border-red-500/30 text-red-300'
+        }`}>
+          {syncMessage}
         </div>
       )}
 

@@ -44,7 +44,7 @@ try {
         <div style="text-align: center;">
           <div style="font-size: 4rem; margin-bottom: 1rem;">⚠️</div>
           <h1 style="font-size: 2rem; margin-bottom: 0.5rem; color: #dc2626;">React Loading Failed</h1>
-          <p style="color: #fdba74; margin-bottom: 1rem;">Error: ${error.message}</p>
+          <p style="color: #fdba74; margin-bottom: 1rem;">Error: ${error instanceof Error ? error.message : String(error)}</p>
           <p style="color: #9ca3af; font-size: 0.9rem;">Check DevTools console for details</p>
         </div>
       </div>

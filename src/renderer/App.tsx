@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Flame, Settings, Activity } from 'lucide-react';
 import Dashboard from './components/Dashboard';
 import Configuration from './components/Configuration';

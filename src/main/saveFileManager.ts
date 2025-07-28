@@ -101,19 +101,27 @@ export class SaveFileManager {
       );
 
       if (saveFiles.length === 0) {
-        throw new Error('No Dark Souls III save files found in the specified directory. Please verify your save path is correct.');
-      }
-
-      for (const file of saveFiles) {
-        const sourcePath = path.join(savePath, file);
-        const destPath = path.join(backupPath, file);
-        
-        try {
-          // Check if source file exists and is readable
-          await fs.access(sourcePath, fs.constants.R_OK);
-          await fs.copyFile(sourcePath, destPath);
-        } catch (fileError) {
-          throw new Error(`Failed to backup save file "${file}": ${(fileError as Error).message}`);
+        // If no save files found, create a placeholder directly in backup directory
+        console.log('⚠️ No save files found locally, creating placeholder for repository sync');
+        const placeholderContent = `# Bonfire Backup Placeholder
+# This file is created when no save files exist locally
+# It will be replaced when save files are detected
+Created: ${new Date().toISOString()}
+`;
+        await fs.writeFile(path.join(backupPath, '.no-saves-placeholder'), placeholderContent);
+      } else {
+        // Copy actual save files
+        for (const file of saveFiles) {
+          const sourcePath = path.join(savePath, file);
+          const destPath = path.join(backupPath, file);
+          
+          try {
+            // Check if source file exists and is readable
+            await fs.access(sourcePath, fs.constants.R_OK);
+            await fs.copyFile(sourcePath, destPath);
+          } catch (fileError) {
+            throw new Error(`Failed to backup save file "${file}": ${(fileError as Error).message}`);
+          }
         }
       }
 
@@ -121,8 +129,8 @@ export class SaveFileManager {
       const syncInfo = {
         timestamp: new Date().toISOString(),
         mode,
-        filesCount: saveFiles.length,
-        files: saveFiles
+        filesCount: saveFiles.length === 1 && saveFiles[0] === '.no-saves-placeholder' ? 0 : saveFiles.length,
+        files: saveFiles.filter(f => f !== '.no-saves-placeholder')
       };
       
       await fs.writeFile(

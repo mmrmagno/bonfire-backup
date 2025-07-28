@@ -27,8 +27,9 @@ export class GitManager {
         isNewRepo = true;
         await this.git.init();
         
-        // Set default branch to main
+        // Set default branch to main and configure pull strategy
         await this.git.raw(['config', 'init.defaultBranch', 'main']);
+        await this.git.raw(['config', 'pull.rebase', 'false']); // Always use merge
         await this.git.checkoutLocalBranch('main');
         
         // Create initial .gitignore
@@ -81,18 +82,18 @@ node_modules/
             try {
               if (isNewRepo) {
                 // For new repos, we need to pull with allow-unrelated-histories and set up tracking
-                await this.git.pull('origin', 'main', ['--allow-unrelated-histories']);
+                await this.git.pull('origin', 'main', ['--allow-unrelated-histories', '--no-rebase']);
                 // Set up tracking branch after successful pull
                 await this.git.branch(['--set-upstream-to=origin/main', 'main']);
                 console.log('✅ Successfully pulled existing backups from remote repository and set up tracking');
               } else {
-                // For existing repos, ensure tracking is set up then sync
+                // For existing repos, ensure tracking is set up then sync with merge strategy
                 try {
                   await this.git.branch(['--set-upstream-to=origin/main', 'main']);
                 } catch (trackingError) {
                   // Tracking might already be set up, ignore error
                 }
-                await this.git.pull('origin', 'main');
+                await this.git.pull('origin', 'main', ['--no-rebase']);
                 console.log('✅ Successfully synced with remote repository');
               }
             } catch (pullError) {
@@ -125,8 +126,13 @@ node_modules/
           }
         }
         
-        // If not a new repo, fix any tracking issues and sync
+        // If not a new repo, configure pull strategy, fix tracking issues, and sync
         if (!isNewRepo) {
+          try {
+            await this.git.raw(['config', 'pull.rebase', 'false']); // Always use merge
+          } catch (configError) {
+            // Config might already be set, ignore
+          }
           await this.ensureTrackingBranch();
           await this.syncWithRemote();
         }
@@ -177,8 +183,8 @@ node_modules/
       // Check if we're behind
       const status = await this.git.status();
       if (status.behind && status.behind > 0) {
-        // Pull latest changes
-        await this.git.pull('origin', 'main');
+        // Pull latest changes with merge strategy
+        await this.git.pull('origin', 'main', ['--no-rebase']);
         console.log('✅ Pulled latest changes from remote repository');
         return true;
       }
@@ -307,8 +313,8 @@ node_modules/
       // Fetch first to make sure we have the latest refs
       await this.git.fetch('origin');
       
-      // Then pull
-      await this.git.pull('origin', 'main');
+      // Then pull with merge strategy
+      await this.git.pull('origin', 'main', ['--no-rebase']);
       console.log('✅ Successfully pulled latest changes from remote');
       return true;
     } catch (error) {

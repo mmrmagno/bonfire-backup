@@ -94,12 +94,10 @@ jobs:
       
     - name: Create Release
       id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      uses: softprops/action-gh-release@v1
       with:
         tag_name: ${{ steps.get_version.outputs.VERSION }}
-        release_name: Bonfire Backup ${{ steps.get_version.outputs.VERSION }}
+        name: Bonfire Backup ${{ steps.get_version.outputs.VERSION }}
         body: |
           🔥 **Bonfire Backup ${{ steps.get_version.outputs.VERSION }}**
           
@@ -130,23 +128,6 @@ jobs:
           
         draft: false
         prerelease: false
-        
-    - name: Upload Linux Release Asset
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./artifacts/linux/bonfire-backup-linux.tar.gz
-        asset_name: bonfire-backup-linux.tar.gz
-        asset_content_type: application/gzip
-        
-    - name: Upload Windows Release Asset
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./artifacts/windows/Bonfire Backup Setup 1.0.0.exe
-        asset_name: bonfire-backup-windows.exe
-        asset_content_type: application/octet-stream
+        files: |
+          ./artifacts/linux/bonfire-backup-linux.tar.gz
+          ./artifacts/windows/Bonfire Backup Setup 1.0.0.exe

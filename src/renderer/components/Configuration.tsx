@@ -270,7 +270,7 @@ const Configuration: React.FC<ConfigurationProps> = ({ onConfigurationChange }) 
             <div>
               <h4 className="font-medium text-red-300 mb-2">Reset Repository</h4>
               <p className="text-sm text-gray-400 mb-3">
-                Delete the local backup repository and start fresh from the remote. Use this if you're having git issues or want to start clean.
+                Delete the local backup repository and start fresh from the remote. Use this if you&apos;re having git issues or want to start clean.
               </p>
               <button
                 onClick={handleResetRepository}

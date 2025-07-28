@@ -57,7 +57,8 @@ function createWindow(): void {
       console.log('DOM ready');
     });
   } else {
-    mainWindow.loadFile(path.join(__dirname, '../renderer/index.html'));
+    const rendererPath = path.join(__dirname, 'renderer/index.html');
+    mainWindow.loadFile(rendererPath);
   }
 }
 

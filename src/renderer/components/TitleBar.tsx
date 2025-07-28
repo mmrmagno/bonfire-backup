@@ -15,13 +15,13 @@ const TitleBar: React.FC = () => {
   };
 
   return (
-    <div className="h-8 bg-gray-800 border-b border-orange-500/20 flex items-center justify-between px-4 select-none" style={{ WebkitAppRegion: 'drag' } as any}>
+    <div className="h-8 bg-gray-800 border-b border-orange-500/20 flex items-center justify-between px-4 select-none" style={{ WebkitAppRegion: 'drag' } as React.CSSProperties}>
       <div className="flex items-center space-x-2">
         <Flame className="w-4 h-4 text-orange-400" />
         <span className="text-sm font-medium text-orange-200">Bonfire Backup</span>
       </div>
       
-      <div className="flex items-center space-x-1" style={{ WebkitAppRegion: 'no-drag' } as any}>
+      <div className="flex items-center space-x-1" style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}>
         <button
           onClick={handleMinimize}
           className="w-6 h-6 flex items-center justify-center rounded hover:bg-gray-700 transition-colors"

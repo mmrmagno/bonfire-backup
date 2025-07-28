@@ -1,6 +1,6 @@
 export interface ElectronAPI {
-  getConfig: () => Promise<any>;
-  setConfig: (key: string, value: any) => Promise<boolean>;
+  getConfig: () => Promise<AppConfig>;
+  setConfig: (key: string, value: string | boolean | null | undefined) => Promise<boolean>;
   detectSavePath: () => Promise<string | null>;
   selectSavePath: () => Promise<string | null>;
   initGitRepo: (repoUrl: string) => Promise<boolean>;

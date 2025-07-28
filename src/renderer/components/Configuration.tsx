@@ -79,7 +79,7 @@ const Configuration: React.FC<ConfigurationProps> = ({ onConfigurationChange }) 
     }
   };
 
-  const updateConfig = (key: keyof AppConfig, value: any) => {
+  const updateConfig = (key: keyof AppConfig, value: string | boolean) => {
     setConfig(prev => ({ ...prev, [key]: value }));
   };
 

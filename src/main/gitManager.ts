@@ -17,7 +17,7 @@ export class GitManager {
       let isNewRepo = false;
       let needsBranchMigration = false;
       try {
-        const status = await this.git.status();
+        await this.git.status();
         const currentBranch = await this.git.revparse(['--abbrev-ref', 'HEAD']);
         if (currentBranch.trim() === 'master') {
           needsBranchMigration = true;
@@ -80,11 +80,18 @@ node_modules/
             // Remote has content, pull it
             try {
               if (isNewRepo) {
-                // For new repos, we need to pull with allow-unrelated-histories
+                // For new repos, we need to pull with allow-unrelated-histories and set up tracking
                 await this.git.pull('origin', 'main', ['--allow-unrelated-histories']);
-                console.log('✅ Successfully pulled existing backups from remote repository');
+                // Set up tracking branch after successful pull
+                await this.git.branch(['--set-upstream-to=origin/main', 'main']);
+                console.log('✅ Successfully pulled existing backups from remote repository and set up tracking');
               } else {
-                // For existing repos, sync normally
+                // For existing repos, ensure tracking is set up then sync
+                try {
+                  await this.git.branch(['--set-upstream-to=origin/main', 'main']);
+                } catch (trackingError) {
+                  // Tracking might already be set up, ignore error
+                }
                 await this.git.pull('origin', 'main');
                 console.log('✅ Successfully synced with remote repository');
               }
@@ -93,10 +100,10 @@ node_modules/
               throw new Error(`Failed to pull existing backups from remote repository: ${(pullError as Error).message}`);
             }
           } else if (isNewRepo) {
-            // Remote is empty, push our initial commit
+            // Remote is empty, push our initial commit with upstream tracking
             try {
               await this.git.push(['-u', 'origin', 'main']);
-              console.log('✅ Successfully pushed initial commit to remote repository');
+              console.log('✅ Successfully pushed initial commit to remote repository with tracking set up');
             } catch (pushError) {
               console.error('❌ Failed to push to remote:', pushError);
               throw new Error(`Failed to push to remote repository: ${(pushError as Error).message}`);
@@ -118,8 +125,9 @@ node_modules/
           }
         }
         
-        // If not a new repo, ensure we're synced
+        // If not a new repo, fix any tracking issues and sync
         if (!isNewRepo) {
+          await this.ensureTrackingBranch();
           await this.syncWithRemote();
         }
       }
@@ -131,12 +139,38 @@ node_modules/
     }
   }
 
+  private async ensureTrackingBranch(): Promise<void> {
+    if (!this.git) {
+      return;
+    }
+
+    try {
+      // Simple approach: try to set upstream tracking, ignore if already set
+      await this.git.branch(['--set-upstream-to=origin/main', 'main']);
+      console.log('✅ Tracking branch configured');
+    } catch (error) {
+      // This will fail if tracking is already set up, which is fine
+      // Only log if it's a real error, not "already exists" type errors
+      const errorMsg = (error as Error).message.toLowerCase();
+      if (!errorMsg.includes('already') && !errorMsg.includes('exists')) {
+        console.warn('Could not set up tracking branch:', error);
+      }
+    }
+  }
+
   async syncWithRemote(): Promise<boolean> {
     if (!this.git || !this.repoPath) {
       throw new Error('Git repository not initialized. Please configure your repository URL first.');
     }
 
     try {
+      // Ensure tracking branch is set up first
+      try {
+        await this.git.branch(['--set-upstream-to=origin/main', 'main']);
+      } catch (trackingError) {
+        // Tracking might already be set up, continue
+      }
+
       // Fetch latest changes
       await this.git.fetch('origin');
       
@@ -192,6 +226,12 @@ node_modules/
       try {
         const remotes = await this.git.getRemotes(true);
         if (remotes.length > 0) {
+          // Ensure tracking is set up before pushing
+          try {
+            await this.git.branch(['--set-upstream-to=origin/main', 'main']);
+          } catch (trackingError) {
+            // Tracking might already be set up, continue
+          }
           await this.git.push('origin', 'main');
         }
       } catch (pushError) {
@@ -257,11 +297,23 @@ node_modules/
     }
 
     try {
+      // Ensure tracking branch is set up first
+      try {
+        await this.git.branch(['--set-upstream-to=origin/main', 'main']);
+      } catch (trackingError) {
+        // Tracking might already be set up, continue
+      }
+
+      // Fetch first to make sure we have the latest refs
+      await this.git.fetch('origin');
+      
+      // Then pull
       await this.git.pull('origin', 'main');
+      console.log('✅ Successfully pulled latest changes from remote');
       return true;
     } catch (error) {
       console.error('Git pull failed:', error);
-      return false;
+      throw new Error(`Failed to pull from remote repository: ${(error as Error).message}`);
     }
   }
 }

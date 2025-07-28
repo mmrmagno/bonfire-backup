@@ -30,7 +30,7 @@ try {
     $ReleaseInfo = Invoke-RestMethod -Uri $LatestReleaseUrl -UseBasicParsing
     
     # Find Windows .exe download URL
-    $Asset = $ReleaseInfo.assets | Where-Object { $_.name -like "*windows*.exe" }
+    $Asset = $ReleaseInfo.assets | Where-Object { $_.name -like "*.exe" }
     
     if (-not $Asset) {
         throw "Could not find Windows executable in latest release."

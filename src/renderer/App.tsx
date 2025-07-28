@@ -10,9 +10,35 @@ type Tab = 'dashboard' | 'configuration' | 'sync';
 function App() {
   const [activeTab, setActiveTab] = useState<Tab>('dashboard');
   const [isConfigured, setIsConfigured] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    checkConfiguration();
+    const initApp = async () => {
+      try {
+        console.log('App starting, electronAPI available:', !!window.electronAPI);
+        console.log('window object keys:', Object.keys(window));
+        
+        // Wait a bit for preload to load if not immediately available
+        if (!window.electronAPI) {
+          console.log('ElectronAPI not immediately available, waiting...');
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+        
+        if (!window.electronAPI) {
+          console.error('Electron API not available after waiting');
+          setIsLoading(false);
+          return;
+        }
+        console.log('Checking configuration...');
+        await checkConfiguration();
+        console.log('App initialized successfully');
+      } catch (error) {
+        console.error('App initialization failed:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    initApp();
   }, []);
 
   const checkConfiguration = async () => {
@@ -29,6 +55,63 @@ function App() {
     { id: 'configuration' as Tab, label: 'Configuration', icon: Settings },
     { id: 'sync' as Tab, label: 'Sync Status', icon: Activity },
   ];
+
+  if (isLoading) {
+    return (
+      <div className="h-screen flex items-center justify-center bg-gray-900 text-orange-100 relative overflow-hidden">
+        {/* Dark Souls inspired loading animation */}
+        <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-gray-800 to-black"></div>
+        
+        {/* Floating embers */}
+        <div className="absolute inset-0">
+          <div className="ember floating-ember-1"></div>
+          <div className="ember floating-ember-2"></div>
+          <div className="ember floating-ember-3"></div>
+          <div className="ember floating-ember-4"></div>
+          <div className="ember floating-ember-5"></div>
+        </div>
+        
+        <div className="text-center z-10">
+          {/* Animated bonfire */}
+          <div className="relative mb-8">
+            <div className="w-24 h-24 mx-auto relative">
+              <Flame className="w-full h-full text-orange-500 animate-pulse" />
+              <div className="absolute inset-0 w-full h-full">
+                <Flame className="w-full h-full text-yellow-400 animate-ping opacity-75" />
+              </div>
+              <div className="absolute inset-2 w-20 h-20">
+                <Flame className="w-full h-full text-red-500 animate-bounce" />
+              </div>
+            </div>
+            <div className="mt-4 w-32 h-2 mx-auto bg-gray-700 rounded-full overflow-hidden">
+              <div className="h-full bg-gradient-to-r from-orange-600 to-yellow-500 rounded-full animate-pulse"></div>
+            </div>
+          </div>
+          
+          <h1 className="font-medieval text-3xl font-bold flame-text mb-4">Bonfire Backup</h1>
+          <p className="text-orange-300 animate-pulse">Kindling the flame...</p>
+          <p className="text-sm text-gray-400 mt-2">Linking your Dark Souls III saves</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!window.electronAPI) {
+    return (
+      <div className="h-screen flex items-center justify-center bg-gray-900 text-orange-100">
+        <div className="text-center">
+          <Flame className="w-16 h-16 text-orange-400 mx-auto mb-4" />
+          <h1 className="font-medieval text-2xl font-bold flame-text mb-4">Bonfire Backup</h1>
+          <p className="text-lg text-red-400 mb-2">Electron API not available</p>
+          <p className="text-sm text-gray-400 mb-4">Please run in Electron environment</p>
+          <div className="text-xs text-gray-500">
+            <p>Debug: Running in browser mode</p>
+            <p>Use: npx electron . to run properly</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="h-screen flex flex-col bg-gray-900 text-orange-100 overflow-hidden">

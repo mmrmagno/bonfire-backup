@@ -4,8 +4,8 @@
   "description": "Dark Souls III save file backup and sync application",
   "main": "dist/main.js",
   "scripts": {
-    "dev": "concurrently \"npm run dev:electron\" \"npm run dev:react\"",
-    "dev:electron": "electron-builder install-app-deps && electron .",
+    "dev": "npm run build:electron && concurrently \"npm run dev:electron\" \"npm run dev:react\"",
+    "dev:electron": "electron .",
     "dev:react": "vite",
     "build": "npm run build:react && npm run build:electron",
     "build:react": "vite build",

@@ -1,8 +1,8 @@
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
 
 @layer base {
   * {
@@ -56,4 +56,78 @@
 
 ::-webkit-scrollbar-thumb:hover {
   @apply bg-orange-500;
+}
+
+/* Dark Souls loading animations */
+.ember {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: radial-gradient(circle, #f97316 0%, #dc2626 50%, transparent 70%);
+  border-radius: 50%;
+  opacity: 0.8;
+}
+
+.floating-ember-1 {
+  top: 20%;
+  left: 15%;
+  animation: float1 8s infinite ease-in-out;
+}
+
+.floating-ember-2 {
+  top: 60%;
+  right: 20%;
+  animation: float2 10s infinite ease-in-out;
+}
+
+.floating-ember-3 {
+  top: 80%;
+  left: 70%;
+  animation: float3 12s infinite ease-in-out;
+}
+
+.floating-ember-4 {
+  top: 30%;
+  right: 40%;
+  animation: float4 9s infinite ease-in-out;
+}
+
+.floating-ember-5 {
+  top: 50%;
+  left: 30%;
+  animation: float5 11s infinite ease-in-out;
+}
+
+@keyframes float1 {
+  0%, 100% { transform: translateY(0) translateX(0) scale(1); opacity: 0.3; }
+  25% { transform: translateY(-50px) translateX(20px) scale(1.2); opacity: 0.8; }
+  50% { transform: translateY(-100px) translateX(-10px) scale(0.8); opacity: 0.6; }
+  75% { transform: translateY(-30px) translateX(30px) scale(1.1); opacity: 0.9; }
+}
+
+@keyframes float2 {
+  0%, 100% { transform: translateY(0) translateX(0) scale(0.8); opacity: 0.4; }
+  30% { transform: translateY(-80px) translateX(-25px) scale(1.3); opacity: 0.7; }
+  60% { transform: translateY(-40px) translateX(15px) scale(0.9); opacity: 0.8; }
+  90% { transform: translateY(-60px) translateX(-5px) scale(1.1); opacity: 0.5; }
+}
+
+@keyframes float3 {
+  0%, 100% { transform: translateY(0) translateX(0) scale(1.1); opacity: 0.5; }
+  20% { transform: translateY(-30px) translateX(-15px) scale(0.7); opacity: 0.9; }
+  40% { transform: translateY(-90px) translateX(25px) scale(1.4); opacity: 0.6; }
+  80% { transform: translateY(-20px) translateX(-20px) scale(0.9); opacity: 0.8; }
+}
+
+@keyframes float4 {
+  0%, 100% { transform: translateY(0) translateX(0) scale(0.9); opacity: 0.6; }
+  35% { transform: translateY(-70px) translateX(10px) scale(1.2); opacity: 0.4; }
+  70% { transform: translateY(-25px) translateX(-30px) scale(1.0); opacity: 0.9; }
+}
+
+@keyframes float5 {
+  0%, 100% { transform: translateY(0) translateX(0) scale(1.0); opacity: 0.7; }
+  15% { transform: translateY(-45px) translateX(35px) scale(0.8); opacity: 0.5; }
+  45% { transform: translateY(-85px) translateX(-20px) scale(1.3); opacity: 0.8; }
+  75% { transform: translateY(-15px) translateX(10px) scale(0.9); opacity: 0.6; }
 }

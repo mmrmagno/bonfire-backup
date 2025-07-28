@@ -7,7 +7,62 @@
     <title>Bonfire Backup</title>
   </head>
   <body class="bg-gray-900 text-orange-100 overflow-hidden">
-    <div id="root"></div>
+    <div id="root">
+      <!-- Fancy Dark Souls fallback loading -->
+      <div style="display: flex; align-items: center; justify-content: center; height: 100vh; background: linear-gradient(135deg, #111827 0%, #1f2937 50%, #000000 100%); color: #f97316; font-family: 'Cinzel', serif; position: relative; overflow: hidden;">
+        <!-- Floating embers -->
+        <div style="position: absolute; top: 20%; left: 15%; width: 4px; height: 4px; background: radial-gradient(circle, #f97316 0%, #dc2626 50%, transparent 70%); border-radius: 50%; animation: float1 8s infinite ease-in-out;"></div>
+        <div style="position: absolute; top: 60%; right: 20%; width: 4px; height: 4px; background: radial-gradient(circle, #f97316 0%, #dc2626 50%, transparent 70%); border-radius: 50%; animation: float2 10s infinite ease-in-out;"></div>
+        <div style="position: absolute; top: 80%; left: 70%; width: 4px; height: 4px; background: radial-gradient(circle, #f97316 0%, #dc2626 50%, transparent 70%); border-radius: 50%; animation: float3 12s infinite ease-in-out;"></div>
+        
+        <div style="text-align: center; z-index: 10;">
+          <!-- Animated bonfire -->
+          <div style="position: relative; margin-bottom: 2rem;">
+            <div style="font-size: 6rem; margin-bottom: 1rem; animation: bonfire-pulse 2s infinite ease-in-out;">🔥</div>
+            <div style="width: 8rem; height: 0.5rem; margin: 0 auto; background: #374151; border-radius: 9999px; overflow: hidden;">
+              <div style="height: 100%; background: linear-gradient(to right, #ea580c, #eab308); border-radius: 9999px; animation: progress-pulse 2s infinite ease-in-out;"></div>
+            </div>
+          </div>
+          
+          <h1 style="font-size: 3rem; margin-bottom: 1rem; background: linear-gradient(135deg, #fb923c, #dc2626, #fb923c); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">Bonfire Backup</h1>
+          <p style="color: #fdba74; font-size: 1.2rem; animation: text-pulse 2s infinite ease-in-out;">Kindling the flame...</p>
+          <p style="color: #9ca3af; font-size: 0.9rem; margin-top: 0.5rem;">Linking your Dark Souls III saves</p>
+        </div>
+      </div>
+    </div>
+    
+    <style>
+      @keyframes bonfire-pulse {
+        0%, 100% { transform: scale(1) rotate(0deg); opacity: 0.8; }
+        50% { transform: scale(1.1) rotate(2deg); opacity: 1; }
+      }
+      @keyframes progress-pulse {
+        0%, 100% { opacity: 0.7; }
+        50% { opacity: 1; }
+      }
+      @keyframes text-pulse {
+        0%, 100% { opacity: 0.7; }
+        50% { opacity: 1; }
+      }
+      @keyframes float1 {
+        0%, 100% { transform: translateY(0) translateX(0) scale(1); opacity: 0.3; }
+        25% { transform: translateY(-50px) translateX(20px) scale(1.2); opacity: 0.8; }
+        50% { transform: translateY(-100px) translateX(-10px) scale(0.8); opacity: 0.6; }
+        75% { transform: translateY(-30px) translateX(30px) scale(1.1); opacity: 0.9; }
+      }
+      @keyframes float2 {
+        0%, 100% { transform: translateY(0) translateX(0) scale(0.8); opacity: 0.4; }
+        30% { transform: translateY(-80px) translateX(-25px) scale(1.3); opacity: 0.7; }
+        60% { transform: translateY(-40px) translateX(15px) scale(0.9); opacity: 0.8; }
+        90% { transform: translateY(-60px) translateX(-5px) scale(1.1); opacity: 0.5; }
+      }
+      @keyframes float3 {
+        0%, 100% { transform: translateY(0) translateX(0) scale(1.1); opacity: 0.5; }
+        20% { transform: translateY(-30px) translateX(-15px) scale(0.7); opacity: 0.9; }
+        40% { transform: translateY(-90px) translateX(25px) scale(1.4); opacity: 0.6; }
+        80% { transform: translateY(-20px) translateX(-20px) scale(0.9); opacity: 0.8; }
+      }
+    </style>
     <script type="module" src="/src/renderer/main.tsx"></script>
   </body>
 </html>

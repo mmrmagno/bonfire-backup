@@ -6,6 +6,9 @@ export interface ElectronAPI {
   initGitRepo: (repoUrl: string) => Promise<boolean>;
   syncSaves: (mode: 'manual' | 'auto') => Promise<boolean>;
   getSyncStatus: () => Promise<SyncStatus>;
+  restoreSaves: () => Promise<boolean>;
+  getBackupInfo: () => Promise<BackupInfo>;
+  pullFromRemote: () => Promise<boolean>;
   minimizeWindow: () => Promise<void>;
   maximizeWindow: () => Promise<void>;
   closeWindow: () => Promise<void>;
@@ -17,6 +20,13 @@ export interface SyncStatus {
   behind: number;
   files: string[];
   lastCommit?: string;
+}
+
+export interface BackupInfo {
+  hasBackup: boolean;
+  fileCount: number;
+  lastBackup?: string;
+  files: string[];
 }
 
 export interface AppConfig {

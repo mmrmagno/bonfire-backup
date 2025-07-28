@@ -30,6 +30,22 @@ export class GitManager {
         // Set default branch to main and configure pull strategy
         await this.git.raw(['config', 'init.defaultBranch', 'main']);
         await this.git.raw(['config', 'pull.rebase', 'false']); // Always use merge
+        
+        // Ensure git user config exists (use defaults if not set globally)
+        try {
+          await this.git.raw(['config', 'user.name']);
+        } catch (error) {
+          console.log('Setting default git user.name for repository');
+          await this.git.raw(['config', 'user.name', 'Bonfire Backup User']);
+        }
+        
+        try {
+          await this.git.raw(['config', 'user.email']);
+        } catch (error) {
+          console.log('Setting default git user.email for repository');
+          await this.git.raw(['config', 'user.email', 'bonfire-backup@local']);
+        }
+        
         await this.git.checkoutLocalBranch('main');
         
         // Create initial .gitignore
@@ -141,7 +157,18 @@ node_modules/
       return true;
     } catch (error) {
       console.error('Git initialization failed:', error);
-      return false;
+      const errorMsg = (error as Error).message;
+      
+      // Check for common git configuration issues
+      if (errorMsg.includes('user.name') || errorMsg.includes('user.email')) {
+        throw new Error('Git is not configured. Please run:\ngit config --global user.name "Your Name"\ngit config --global user.email "your.email@example.com"');
+      } else if (errorMsg.includes('Authentication failed') || errorMsg.includes('Permission denied')) {
+        throw new Error('Git authentication failed. Please set up SSH keys or GitHub CLI authentication (gh auth login)');
+      } else if (errorMsg.includes('Could not resolve host')) {
+        throw new Error('Network connection failed. Check your internet connection and repository URL.');
+      } else {
+        throw new Error(`Git initialization failed: ${errorMsg}`);
+      }
     }
   }
 

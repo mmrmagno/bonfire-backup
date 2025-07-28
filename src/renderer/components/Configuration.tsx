@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Folder, GitBranch, Settings, Save, RefreshCw, CheckCircle, AlertCircle } from 'lucide-react';
+import { Folder, GitBranch, Settings, Save, RefreshCw, CheckCircle, AlertCircle, AlertTriangle } from 'lucide-react';
 import { AppConfig } from '../../types';
 
 interface ConfigurationProps {
@@ -10,6 +10,7 @@ const Configuration: React.FC<ConfigurationProps> = ({ onConfigurationChange }) 
   const [config, setConfig] = useState<AppConfig>({});
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'success' | 'error'>('idle');
   const [detectStatus, setDetectStatus] = useState<'idle' | 'detecting' | 'success' | 'error'>('idle');
+  const [isResetting, setIsResetting] = useState(false);
 
   useEffect(() => {
     loadConfig();
@@ -81,6 +82,33 @@ const Configuration: React.FC<ConfigurationProps> = ({ onConfigurationChange }) 
 
   const updateConfig = (key: keyof AppConfig, value: string | boolean | number) => {
     setConfig(prev => ({ ...prev, [key]: value }));
+  };
+
+  const handleResetRepository = async () => {
+    if (!config.repoUrl) {
+      alert('❌ Please configure your repository URL first');
+      return;
+    }
+
+    const confirmed = confirm(
+      '⚠️ This will delete your local backup repository and start fresh from the remote.\n\n' +
+      'Any local changes that haven\'t been synced will be lost.\n\n' +
+      'Are you sure you want to continue?'
+    );
+
+    if (!confirmed) return;
+
+    setIsResetting(true);
+    try {
+      await window.electronAPI.resetRepository();
+      alert('✅ Repository reset successfully! Fresh start from remote.');
+      onConfigurationChange(); // Refresh the parent component
+    } catch (error) {
+      console.error('Reset failed:', error);
+      alert(`❌ Reset failed: ${(error as Error).message}`);
+    } finally {
+      setIsResetting(false);
+    }
   };
 
   return (
@@ -230,6 +258,41 @@ const Configuration: React.FC<ConfigurationProps> = ({ onConfigurationChange }) 
           )}
         </div>
       </div>
+
+      {/* Danger Zone */}
+      {config.repoUrl && (
+        <div className="ember-border rounded-lg p-6 bg-red-900/10 border-red-500/30">
+          <h3 className="font-semibold text-red-400 mb-4 flex items-center space-x-2">
+            <AlertTriangle className="w-5 h-5" />
+            <span>Danger Zone</span>
+          </h3>
+          <div className="space-y-4">
+            <div>
+              <h4 className="font-medium text-red-300 mb-2">Reset Repository</h4>
+              <p className="text-sm text-gray-400 mb-3">
+                Delete the local backup repository and start fresh from the remote. Use this if you're having git issues or want to start clean.
+              </p>
+              <button
+                onClick={handleResetRepository}
+                disabled={isResetting}
+                className="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg font-medium text-red-100 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isResetting ? (
+                  <div className="flex items-center space-x-2">
+                    <RefreshCw className="w-4 h-4 animate-spin" />
+                    <span>Resetting...</span>
+                  </div>
+                ) : (
+                  <div className="flex items-center space-x-2">
+                    <AlertTriangle className="w-4 h-4" />
+                    <span>Reset Repository</span>
+                  </div>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Save Button */}
       <div className="flex justify-center">

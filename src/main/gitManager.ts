@@ -324,6 +324,42 @@ node_modules/
     }
   }
 
+  async resetRepository(backupPath: string, repoUrl: string): Promise<boolean> {
+    try {
+      console.log('🔄 Resetting repository - deleting local backup directory...');
+      
+      // Close any existing git instance
+      this.git = undefined;
+      this.repoPath = undefined;
+      
+      // Remove the entire backup directory
+      const fs = await import('fs/promises');
+      try {
+        await fs.rm(backupPath, { recursive: true, force: true });
+        console.log('✅ Local repository deleted successfully');
+      } catch (deleteError) {
+        console.warn('Could not delete directory (may not exist):', deleteError);
+      }
+      
+      // Wait a moment for file system to settle
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Re-initialize fresh from remote
+      console.log('🔄 Re-initializing repository from remote...');
+      const success = await this.initializeRepository(backupPath, repoUrl);
+      
+      if (success) {
+        console.log('✅ Repository reset and re-initialized successfully');
+        return true;
+      } else {
+        throw new Error('Failed to re-initialize repository after reset');
+      }
+    } catch (error) {
+      console.error('Repository reset failed:', error);
+      throw new Error(`Failed to reset repository: ${(error as Error).message}`);
+    }
+  }
+
   async pullLatest(): Promise<boolean> {
     if (!this.git) {
       throw new Error('Git not initialized');

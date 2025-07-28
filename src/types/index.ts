@@ -9,6 +9,7 @@ export interface ElectronAPI {
   restoreSaves: () => Promise<boolean>;
   getBackupInfo: () => Promise<BackupInfo>;
   pullFromRemote: () => Promise<boolean>;
+  resetRepository: () => Promise<boolean>;
   minimizeWindow: () => Promise<void>;
   maximizeWindow: () => Promise<void>;
   closeWindow: () => Promise<void>;

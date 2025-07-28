@@ -13,6 +13,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   restoreSaves: () => ipcRenderer.invoke('restore-saves'),
   getBackupInfo: () => ipcRenderer.invoke('get-backup-info'),
   pullFromRemote: () => ipcRenderer.invoke('pull-from-remote'),
+  resetRepository: () => ipcRenderer.invoke('reset-repository'),
   minimizeWindow: () => ipcRenderer.invoke('minimize-window'),
   maximizeWindow: () => ipcRenderer.invoke('maximize-window'),
   closeWindow: () => ipcRenderer.invoke('close-window'),

@@ -216,6 +216,17 @@ ipcMain.handle('pull-from-remote', async () => {
   return await gitManager.syncWithRemote();
 });
 
+ipcMain.handle('reset-repository', async () => {
+  const repoUrl = store.get('repoUrl') as string;
+  const backupPath = store.get('backupPath') as string || path.join(os.homedir(), '.bonfire-backup');
+  
+  if (!repoUrl) {
+    throw new Error('No remote repository configured. Please set your repository URL first.');
+  }
+  
+  return await gitManager.resetRepository(backupPath, repoUrl);
+});
+
 ipcMain.handle('minimize-window', () => {
   mainWindow.minimize();
 });

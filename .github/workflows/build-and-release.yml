@@ -1,0 +1,149 @@
+name: Build and Release
+
+on:
+  push:
+    branches: [ main ]
+    tags: [ 'v*' ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Run typecheck
+      run: npm run typecheck
+      
+    - name: Run linting
+      run: npm run lint
+      
+    - name: Build application
+      run: npm run build
+      
+    - name: Build distributables
+      run: |
+        if [ "$RUNNER_OS" == "Linux" ]; then
+          npm run dist:linux
+          # Create a tarball of the Linux directory
+          cd release/linux-unpacked
+          tar -czf ../bonfire-backup-linux.tar.gz .
+          cd ../..
+        elif [ "$RUNNER_OS" == "Windows" ]; then
+          npm run dist:win
+        fi
+      shell: bash
+      
+    - name: Upload Linux artifacts
+      if: matrix.os == 'ubuntu-latest'
+      uses: actions/upload-artifact@v4
+      with:
+        name: bonfire-backup-linux
+        path: release/bonfire-backup-linux.tar.gz
+        
+    - name: Upload Windows artifacts
+      if: matrix.os == 'windows-latest'
+      uses: actions/upload-artifact@v4
+      with:
+        name: bonfire-backup-windows
+        path: release/*.exe
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Download Linux artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: bonfire-backup-linux
+        path: ./artifacts/linux/
+        
+    - name: Download Windows artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: bonfire-backup-windows
+        path: ./artifacts/windows/
+        
+    - name: Get version from tag
+      id: get_version
+      run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+      
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ steps.get_version.outputs.VERSION }}
+        release_name: Bonfire Backup ${{ steps.get_version.outputs.VERSION }}
+        body: |
+          🔥 **Bonfire Backup ${{ steps.get_version.outputs.VERSION }}**
+          
+          Keep your Dark Souls III save files safe across the void.
+          
+          ## Downloads
+          - **Linux**: Download the `.AppImage` file below
+          - **Windows**: Download the `.exe` installer below
+          
+          ## Installation
+          
+          ### Linux
+          ```bash
+          curl -sSL https://raw.githubusercontent.com/${{ github.repository }}/main/install.sh | bash
+          ```
+          
+          ### Windows (PowerShell as Administrator)
+          ```powershell
+          irm https://raw.githubusercontent.com/${{ github.repository }}/main/install.ps1 | iex
+          ```
+          
+          ## Features
+          - 🛡️ Automatic save file detection
+          - ☁️ Git-based backup with remote sync
+          - 🔄 Auto-sync with file watching
+          - 📁 Manual backup and restore
+          - 🎮 Dark Souls III themed UI
+          
+        draft: false
+        prerelease: false
+        
+    - name: Upload Linux Release Asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./artifacts/linux/bonfire-backup-linux.tar.gz
+        asset_name: bonfire-backup-linux.tar.gz
+        asset_content_type: application/gzip
+        
+    - name: Upload Windows Release Asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./artifacts/windows/Bonfire Backup Setup 1.0.0.exe
+        asset_name: bonfire-backup-windows.exe
+        asset_content_type: application/octet-stream

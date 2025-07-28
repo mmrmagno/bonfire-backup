@@ -9,7 +9,9 @@ $ErrorActionPreference = "Stop"
 
 Write-Host "🔥 Installing Bonfire Backup - Dark Souls III Save Sync Tool..." -ForegroundColor Yellow
 
-$RepoUrl = "https://github.com/username/bonfire-backup"
+$RepoOwner = "mmrmagno"
+$RepoName = "bonfire-backup"
+$RepoUrl = "https://github.com/$RepoOwner/$RepoName"
 $BinName = "bonfire-backup.exe"
 
 # Detect architecture
@@ -21,11 +23,24 @@ try {
         New-Item -ItemType Directory -Path $InstallPath -Force | Out-Null
     }
 
-    Write-Host "📦 Downloading Bonfire Backup for Windows ($Arch)..." -ForegroundColor Cyan
-
-    # Download URL
-    $DownloadUrl = "$RepoUrl/releases/latest/download/bonfire-backup-win-$Arch.exe"
+    Write-Host "🔍 Finding latest release..." -ForegroundColor Cyan
+    
+    # Get latest release info from GitHub API
+    $LatestReleaseUrl = "https://api.github.com/repos/$RepoOwner/$RepoName/releases/latest"
+    $ReleaseInfo = Invoke-RestMethod -Uri $LatestReleaseUrl -UseBasicParsing
+    
+    # Find Windows .exe download URL
+    $Asset = $ReleaseInfo.assets | Where-Object { $_.name -like "*windows*.exe" }
+    
+    if (-not $Asset) {
+        throw "Could not find Windows executable in latest release."
+    }
+    
+    $DownloadUrl = $Asset.browser_download_url
     $ExePath = Join-Path $InstallPath $BinName
+
+    Write-Host "📦 Downloading Bonfire Backup for Windows..." -ForegroundColor Cyan
+    Write-Host "⬇️  Downloading from: $DownloadUrl" -ForegroundColor Gray
 
     # Download the executable
     Invoke-WebRequest -Uri $DownloadUrl -OutFile $ExePath -UseBasicParsing

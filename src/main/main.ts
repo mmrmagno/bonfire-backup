@@ -20,7 +20,7 @@ function createWindow(): void {
     frame: false,
     titleBarStyle: 'hidden',
     backgroundColor: '#111827',
-    show: false, // Don't show until ready
+    show: true,
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,

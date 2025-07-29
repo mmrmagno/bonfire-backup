@@ -1,5 +1,18 @@
 # 🔥 Bonfire Backup
 
+## BETA BRANCH
+
+This is a beta branch, here I will attempt to implement the following features:
+
+- [ ] **In-App Updates**  
+  Seamless updates without visiting GitHub.
+
+- [ ] **Simple Remote Repo Auth**  
+  Skip SSH keys and GitHub CLI,  use GitHub OAuth or similar.
+
+- [ ] **macOS Compatibility (Optional)**  
+  Support macOS for the few brave Souls players on Mac 😅
+
 > Keep your Dark Souls III save files safe across the void. Never lose your progress to the abyss again.
 
 Bonfire Backup is a Dark Souls III save file backup, and synchronization tool to keep your game progress using Git version control.

@@ -57,11 +57,9 @@ export class AuthManager {
 
   async completeGitHubAuth(deviceCode: string, interval: number): Promise<boolean> {
     try {
-      const token = await this.pollForToken(deviceCode, interval);
-      if (!token) {
-        return false;
-      }
-
+      // Try to get token once (no internal polling)
+      const token = await this.requestToken(deviceCode);
+      
       const user = await this.getUserInfo(token.access_token);
       
       // Store authentication data
@@ -69,10 +67,21 @@ export class AuthManager {
       this.store.set('github.user', user);
       this.store.set('github.authenticated', true);
       
+      console.log('GitHub authentication completed successfully');
       return true;
-    } catch (error) {
-      console.error('Failed to complete GitHub auth:', error);
-      return false;
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'unknown';
+      if (errorMessage === 'authorization_pending') {
+        // Still waiting for user authorization
+        return false;
+      } else if (errorMessage === 'slow_down') {
+        // Rate limit hit, tell frontend to slow down
+        return false;
+      } else {
+        // Real error (expired, denied, etc.)
+        console.error('GitHub auth failed:', errorMessage);
+        throw new Error(`GitHub authentication failed: ${errorMessage}`);
+      }
     }
   }
 

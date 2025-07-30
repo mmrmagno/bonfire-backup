@@ -81,8 +81,10 @@ const GitHubAuth: React.FC<GitHubAuthProps> = ({ onRepoSelected, selectedRepo })
       }
 
       try {
+        console.log(`Checking GitHub auth status (attempt ${attempts})...`);
         const success = await window.electronAPI.completeGitHubAuth(deviceCode, interval);
         if (success) {
+          console.log('GitHub authentication successful!');
           setAuthInProgress(false);
           setUserCode('');
           setVerificationUri('');
@@ -102,11 +104,15 @@ const GitHubAuth: React.FC<GitHubAuthProps> = ({ onRepoSelected, selectedRepo })
             }
           }
         } else {
+          // Still waiting for authorization
           setTimeout(poll, interval * 1000);
         }
       } catch (error) {
-        console.error('Auth polling error:', error);
-        setTimeout(poll, interval * 1000);
+        console.error('GitHub auth failed:', error);
+        setAuthInProgress(false);
+        setUserCode('');
+        setVerificationUri('');
+        alert(`GitHub authentication failed: ${error.message || 'Unknown error'}`);
       }
     };
 

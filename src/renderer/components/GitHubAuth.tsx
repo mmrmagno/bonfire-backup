@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Github, LogOut, Plus, List, Lock, Unlock, CheckCircle, RefreshCw } from 'lucide-react';
 import { GitHubUser } from '../../types';
 
@@ -20,23 +20,7 @@ const GitHubAuth: React.FC<GitHubAuthProps> = ({ onRepoSelected, selectedRepo })
   const [loadingRepos, setLoadingRepos] = useState(false);
   const [creatingRepo, setCreatingRepo] = useState(false);
 
-  useEffect(() => {
-    loadAuthStatus();
-  }, []);
-
-  const loadAuthStatus = async () => {
-    try {
-      const status = await window.electronAPI.getAuthStatus();
-      setAuthStatus(status);
-      if (status.authenticated) {
-        loadRepositories();
-      }
-    } catch (error) {
-      console.error('Failed to load auth status:', error);
-    }
-  };
-
-  const loadRepositories = async () => {
+  const loadRepositories = useCallback(async () => {
     if (!authStatus.authenticated) return;
     
     setLoadingRepos(true);
@@ -48,7 +32,23 @@ const GitHubAuth: React.FC<GitHubAuthProps> = ({ onRepoSelected, selectedRepo })
     } finally {
       setLoadingRepos(false);
     }
-  };
+  }, [authStatus.authenticated]);
+
+  const loadAuthStatus = useCallback(async () => {
+    try {
+      const status = await window.electronAPI.getAuthStatus();
+      setAuthStatus(status);
+      if (status.authenticated) {
+        loadRepositories();
+      }
+    } catch (error) {
+      console.error('Failed to load auth status:', error);
+    }
+  }, [loadRepositories]);
+
+  useEffect(() => {
+    loadAuthStatus();
+  }, [loadAuthStatus]);
 
   const startAuthentication = async () => {
     setAuthInProgress(true);

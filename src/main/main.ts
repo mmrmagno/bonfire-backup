@@ -1,6 +1,5 @@
 import { app, BrowserWindow, ipcMain, dialog } from 'electron';
 import * as path from 'path';
-import * as fs from 'fs';
 import * as os from 'os';
 import Store from 'electron-store';
 import { SaveFileManager } from './saveFileManager';
@@ -90,9 +89,8 @@ app.whenReady().then(() => {
 let autoSyncInterval: NodeJS.Timeout | null = null;
 
 function setupAutoSync() {
-  const config = store.store as any;
+  const config = store.store as Record<string, unknown>;
   if (config.autoSync && config.savePath) {
-    const interval = ((config.syncInterval as number) || 5) * 60 * 1000; // Convert minutes to ms
     
     saveFileManager.startWatching(config.savePath as string, async () => {
       // Debounce rapid file changes
@@ -136,7 +134,7 @@ ipcMain.handle('get-config', () => {
   return store.store;
 });
 
-ipcMain.handle('set-config', (_, key: string, value: any) => {
+ipcMain.handle('set-config', (_, key: string, value: unknown) => {
   // Handle null/undefined values properly for electron-store
   if (value === null || value === undefined || value === '') {
     if (store.has(key)) {
@@ -178,7 +176,6 @@ ipcMain.handle('select-save-path', async () => {
 });
 
 ipcMain.handle('init-git-repo', async (_, repoUrl: string) => {
-  const savePath = store.get('savePath') as string;
   const backupPath = store.get('backupPath') as string || path.join(os.homedir(), '.bonfire-backup');
   
   // Set GitHub token if available

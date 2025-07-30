@@ -88,7 +88,7 @@ export class AuthManager {
         private: isPrivate,
         description: 'Dark Souls III save file backup repository created by Bonfire Backup',
         auto_init: true
-      }, token);
+      }, token) as { clone_url: string };
 
       return repoData.clone_url;
     } catch (error) {
@@ -104,9 +104,9 @@ export class AuthManager {
     }
 
     try {
-      const repos = await this.makeGitHubRequest('GET', '/user/repos?sort=updated&per_page=50', null, token);
+      const repos = await this.makeGitHubRequest('GET', '/user/repos?sort=updated&per_page=50', null, token) as Array<{ name: string; clone_url: string; private: boolean }>;
       
-      return repos.map((repo: any) => ({
+      return repos.map((repo: { name: string; clone_url: string; private: boolean }) => ({
         name: repo.name,
         clone_url: repo.clone_url,
         private: repo.private
@@ -203,11 +203,12 @@ export class AuthManager {
         try {
           const token = await this.requestToken(deviceCode);
           resolve(token);
-        } catch (error: any) {
-          if (error.message === 'authorization_pending') {
+        } catch (error: unknown) {
+          const errorMessage = error instanceof Error ? error.message : 'unknown';
+          if (errorMessage === 'authorization_pending') {
             // Continue polling
             setTimeout(poll, interval * 1000);
-          } else if (error.message === 'slow_down') {
+          } else if (errorMessage === 'slow_down') {
             // Increase interval and continue
             setTimeout(poll, (interval + 5) * 1000);
           } else {
@@ -266,10 +267,10 @@ export class AuthManager {
   }
 
   private async getUserInfo(token: string): Promise<GitHubUser> {
-    return this.makeGitHubRequest('GET', '/user', null, token);
+    return this.makeGitHubRequest('GET', '/user', null, token) as Promise<GitHubUser>;
   }
 
-  private async makeGitHubRequest(method: string, path: string, data: any, token: string): Promise<any> {
+  private async makeGitHubRequest(method: string, path: string, data: unknown, token: string): Promise<unknown> {
     return new Promise((resolve, reject) => {
       const headers: { [key: string]: string | number } = {
         'Authorization': `token ${token}`,

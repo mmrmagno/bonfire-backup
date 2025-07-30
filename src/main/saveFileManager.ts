@@ -135,7 +135,7 @@ export class SaveFileManager {
     }
 
     this.watcher = chokidar.watch(savePath, {
-      ignored: /[\/\\]\./,
+      ignored: /[/\\]\./,
       persistent: true,
       ignoreInitial: true
     });

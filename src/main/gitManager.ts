@@ -38,7 +38,7 @@ export class GitManager {
       let isNewRepo = false;
       let needsBranchMigration = false;
       try {
-        const status = await this.git.status();
+        await this.git.status();
         const currentBranch = await this.git.revparse(['--abbrev-ref', 'HEAD']);
         if (currentBranch.trim() === 'master') {
           needsBranchMigration = true;

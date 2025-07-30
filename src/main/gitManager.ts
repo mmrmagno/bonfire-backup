@@ -15,8 +15,8 @@ export class GitManager {
     if (this.token && url.startsWith('https://github.com/')) {
       // Convert HTTPS URL to authenticated URL with token
       const urlParts = url.replace('https://github.com/', '').replace('.git', '');
-      // For GitHub OAuth tokens, use token as username with x-oauth-basic as password
-      return `https://${this.token}:x-oauth-basic@github.com/${urlParts}.git`;
+      // Try modern GitHub token format first (just token as username)
+      return `https://${this.token}@github.com/${urlParts}.git`;
     }
     return url;
   }
@@ -181,8 +181,27 @@ node_modules/
             }
           }
           
-          await this.git.push('origin', 'main');
-          console.log('✅ Successfully pushed to remote repository');
+          try {
+            await this.git.push('origin', 'main');
+            console.log('✅ Successfully pushed to remote repository');
+          } catch (pushAttempt1) {
+            console.log('First push attempt failed, trying with x-oauth-basic format...');
+            // Try alternative OAuth format
+            if (this.token) {
+              const remoteUrl = remotes[0].refs.push || await this.git.getRemotes(true).then(r => r[0]?.refs?.push);
+              if (remoteUrl && remoteUrl.startsWith('https://github.com/')) {
+                const urlParts = remoteUrl.replace('https://github.com/', '').replace('.git', '');
+                const altAuthUrl = `https://${this.token}:x-oauth-basic@github.com/${urlParts}.git`;
+                console.log('Trying x-oauth-basic format...');
+                await this.git.removeRemote('origin');
+                await this.git.addRemote('origin', altAuthUrl);
+                await this.git.push('origin', 'main');
+                console.log('✅ Successfully pushed with x-oauth-basic format');
+              }
+            } else {
+              throw pushAttempt1;
+            }
+          }
         }
       } catch (pushError) {
         const errorMessage = (pushError as Error).message;

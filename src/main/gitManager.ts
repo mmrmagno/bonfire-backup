@@ -15,8 +15,8 @@ export class GitManager {
     if (this.token && url.startsWith('https://github.com/')) {
       // Convert HTTPS URL to authenticated URL with token
       const urlParts = url.replace('https://github.com/', '').replace('.git', '');
-      // Use token as username for GitHub authentication
-      return `https://${this.token}@github.com/${urlParts}.git`;
+      // For GitHub OAuth tokens, use token as username with x-oauth-basic as password
+      return `https://${this.token}:x-oauth-basic@github.com/${urlParts}.git`;
     }
     return url;
   }
@@ -153,26 +153,45 @@ node_modules/
       // Check if there are any changes to commit
       const status = await this.git.status();
       if (status.files.length === 0) {
+        console.log('No changes to commit, skipping');
         return true; // No changes to commit
       }
 
       // Commit with timestamp
       const timestamp = new Date().toISOString();
       const commitMessage = `${message} - ${timestamp}`;
+      console.log('Committing changes:', commitMessage);
       await this.git.commit(commitMessage);
 
       // Try to push if remote exists
       try {
         const remotes = await this.git.getRemotes(true);
         if (remotes.length > 0) {
+          console.log('Pushing to remote repository...');
+          console.log('Token available:', !!this.token);
+          
+          // Update remote URL with token if OAuth is being used
+          if (this.token) {
+            const remoteUrl = remotes[0].refs.push;
+            if (remoteUrl && remoteUrl.startsWith('https://github.com/')) {
+              const authenticatedUrl = this.getAuthenticatedUrl(remoteUrl);
+              console.log('Updating remote with authenticated URL');
+              await this.git.removeRemote('origin');
+              await this.git.addRemote('origin', authenticatedUrl);
+            }
+          }
+          
           await this.git.push('origin', 'main');
+          console.log('✅ Successfully pushed to remote repository');
         }
       } catch (pushError) {
         const errorMessage = (pushError as Error).message;
+        console.error('Push error details:', errorMessage);
+        
         if (errorMessage.includes('master') || errorMessage.includes('main')) {
           console.error('❌ Push failed due to branch mismatch. Your local repository uses a different branch than your remote repository.');
           throw new Error('Push failed: Branch mismatch between local and remote repository. Make sure your remote repository uses the "main" branch.');
-        } else if (errorMessage.includes('403') || errorMessage.includes('401') || errorMessage.includes('authentication')) {
+        } else if (errorMessage.includes('403') || errorMessage.includes('401') || errorMessage.includes('authentication') || errorMessage.includes('could not read Username')) {
           console.error('❌ Push failed due to authentication. Token may be expired or invalid.');
           throw new Error('Authentication failed: Your GitHub token may be expired. Please reconnect your GitHub account.');
         } else {

@@ -159,7 +159,8 @@ const GitHubAuth: React.FC<GitHubAuthProps> = ({ onRepoSelected, selectedRepo })
 
   const getRepoWebUrl = (cloneUrl: string) => {
     // Convert clone URL to web URL
-    return cloneUrl.replace('.git', '').replace('https://github.com/', 'https://github.com/');
+    // cloneUrl format: https://github.com/username/repo.git
+    return cloneUrl.replace('.git', '');
   };
 
   const handleDeleteRepo = async () => {

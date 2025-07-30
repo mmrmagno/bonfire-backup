@@ -75,16 +75,16 @@ const UpdateNotification: React.FC = () => {
         <button
           onClick={checkForUpdates}
           disabled={checkingForUpdates}
-          className="flex items-center space-x-2 px-3 py-1 bg-gray-700 hover:bg-gray-600 border border-gray-600 rounded text-orange-200 transition-colors disabled:opacity-50 text-sm"
+          className="flex items-center space-x-2 px-3 py-1 bg-gray-700 hover:bg-gray-600 border border-gray-600 rounded text-orange-200 transition-all duration-200 disabled:opacity-50 text-sm hover:shadow-md hover:shadow-orange-500/20"
         >
           {checkingForUpdates ? (
             <>
-              <RefreshCw className="w-4 h-4 animate-spin" />
-              <span>Checking...</span>
+              <RefreshCw className="w-4 h-4 animate-spin-fast text-orange-400" />
+              <span className="loading-dots">Checking</span>
             </>
           ) : (
             <>
-              <RefreshCw className="w-4 h-4" />
+              <RefreshCw className="w-4 h-4 transition-transform hover:rotate-180 duration-300" />
               <span>Check for Updates</span>
             </>
           )}
@@ -130,16 +130,16 @@ const UpdateNotification: React.FC = () => {
                 <button
                   onClick={downloadUpdate}
                   disabled={downloadingUpdate}
-                  className="px-3 py-1 bg-orange-100 text-orange-700 rounded font-medium hover:bg-white transition-colors disabled:opacity-50 text-sm flex items-center space-x-1"
+                  className="px-3 py-1 bg-orange-100 text-orange-700 rounded font-medium hover:bg-white transition-all duration-200 disabled:opacity-50 text-sm flex items-center space-x-1 hover:shadow-lg hover:scale-105"
                 >
                   {downloadingUpdate ? (
                     <>
-                      <RefreshCw className="w-3 h-3 animate-spin" />
-                      <span>Downloading...</span>
+                      <RefreshCw className="w-3 h-3 animate-spin-fast" />
+                      <span className="loading-dots">Downloading</span>
                     </>
                   ) : (
                     <>
-                      <Download className="w-3 h-3" />
+                      <Download className="w-3 h-3 transition-transform hover:scale-110" />
                       <span>Download</span>
                     </>
                   )}

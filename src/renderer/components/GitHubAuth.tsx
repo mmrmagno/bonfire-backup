@@ -61,6 +61,7 @@ const GitHubAuth: React.FC<GitHubAuthProps> = ({ onRepoSelected, selectedRepo })
       pollForCompletion(authData.userCode, 5); // 5 second interval
     } catch (error) {
       console.error('Failed to start authentication:', error);
+      alert('GitHub OAuth temporarily unavailable. Please use manual repository URL configuration in Advanced Settings below.');
       setAuthInProgress(false);
     }
   };
@@ -143,9 +144,9 @@ const GitHubAuth: React.FC<GitHubAuthProps> = ({ onRepoSelected, selectedRepo })
             
             <button
               onClick={startAuthentication}
-              className="flex items-center space-x-2 px-4 py-2 bonfire-glow rounded-lg font-semibold text-orange-100 hover:shadow-xl hover:shadow-orange-500/30 transition-all duration-200"
+              className="flex items-center space-x-2 px-4 py-2 bonfire-glow rounded-lg font-semibold text-orange-100 hover:shadow-xl hover:shadow-orange-500/30 transition-all duration-200 hover:scale-105 active:scale-95"
             >
-              <Github className="w-4 h-4" />
+              <Github className="w-4 h-4 transition-transform hover:scale-110" />
               <span>Connect GitHub Account</span>
             </button>
             
@@ -162,8 +163,8 @@ const GitHubAuth: React.FC<GitHubAuthProps> = ({ onRepoSelected, selectedRepo })
         ) : (
           <div className="space-y-4">
             <div className="flex items-center space-x-2 text-orange-300">
-              <RefreshCw className="w-4 h-4 animate-spin" />
-              <span>Waiting for authorization...</span>
+              <RefreshCw className="w-4 h-4 animate-spin-fast text-orange-400" />
+              <span className="animate-pulse-glow">Waiting for authorization...</span>
             </div>
             
             {userCode && (
@@ -171,7 +172,7 @@ const GitHubAuth: React.FC<GitHubAuthProps> = ({ onRepoSelected, selectedRepo })
                 <p className="text-orange-200 font-medium mb-2">
                   Enter this code on GitHub:
                 </p>
-                <div className="font-mono text-2xl text-orange-100 bg-gray-900 px-4 py-2 rounded text-center">
+                <div className="font-mono text-2xl text-orange-100 bg-gray-900 px-4 py-2 rounded text-center animate-pulse-glow border border-orange-500/30">
                   {userCode}
                 </div>
                 <p className="text-gray-400 text-sm mt-2">
@@ -287,12 +288,12 @@ const GitHubAuth: React.FC<GitHubAuthProps> = ({ onRepoSelected, selectedRepo })
                 >
                   {creatingRepo ? (
                     <>
-                      <RefreshCw className="w-4 h-4 animate-spin" />
-                      <span>Creating...</span>
+                      <RefreshCw className="w-4 h-4 animate-spin-fast" />
+                      <span className="loading-dots">Creating</span>
                     </>
                   ) : (
                     <>
-                      <Plus className="w-4 h-4" />
+                      <Plus className="w-4 h-4 transition-transform hover:scale-110" />
                       <span>Create Repository</span>
                     </>
                   )}
@@ -319,7 +320,7 @@ const GitHubAuth: React.FC<GitHubAuthProps> = ({ onRepoSelected, selectedRepo })
                 className="text-orange-400 hover:text-orange-300 text-sm"
               >
                 {loadingRepos ? (
-                  <RefreshCw className="w-4 h-4 animate-spin" />
+                  <RefreshCw className="w-4 h-4 animate-spin-fast" />
                 ) : (
                   'Refresh'
                 )}
@@ -328,8 +329,8 @@ const GitHubAuth: React.FC<GitHubAuthProps> = ({ onRepoSelected, selectedRepo })
             
             {loadingRepos ? (
               <div className="flex items-center space-x-2 text-orange-300">
-                <RefreshCw className="w-4 h-4 animate-spin" />
-                <span>Loading repositories...</span>
+                <RefreshCw className="w-4 h-4 animate-spin-fast" />
+                <span className="loading-dots">Loading repositories</span>
               </div>
             ) : repositories.length > 0 ? (
               <div className="space-y-2 max-h-64 overflow-y-auto">

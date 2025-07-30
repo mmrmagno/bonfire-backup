@@ -25,7 +25,7 @@ interface GitHubUser {
 export class AuthManager {
   private store: Store;
   private mainWindow: BrowserWindow;
-  private readonly clientId = 'Ov23liDJlBwmAMiwhTMt'; // GitHub OAuth App Client ID
+  private readonly clientId = 'Ov23liDJlBwmAMiwhTMt'; // TODO: Replace with real GitHub OAuth App Client ID
 
   constructor(mainWindow: BrowserWindow, store: Store) {
     this.mainWindow = mainWindow;
@@ -34,7 +34,12 @@ export class AuthManager {
 
   async startGitHubAuth(): Promise<{ userCode: string; verificationUri: string }> {
     try {
+      console.log('Starting GitHub OAuth device flow...');
       const deviceAuth = await this.initiateDeviceFlow();
+      console.log('Device flow initiated successfully:', { 
+        userCode: deviceAuth.user_code, 
+        verificationUri: deviceAuth.verification_uri 
+      });
       
       // Open GitHub authorization page
       await shell.openExternal(deviceAuth.verification_uri);
@@ -44,8 +49,9 @@ export class AuthManager {
         verificationUri: deviceAuth.verification_uri
       };
     } catch (error) {
-      console.error('Failed to start GitHub auth:', error);
-      throw new Error('Failed to initiate GitHub authentication');
+      console.error('Failed to start GitHub auth - detailed error:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      throw new Error(`Failed to initiate GitHub authentication: ${errorMessage}`);
     }
   }
 
@@ -135,6 +141,8 @@ export class AuthManager {
         scope: 'repo'
       });
 
+      console.log('Making device flow request to GitHub...', { clientId: this.clientId });
+
       const options = {
         hostname: 'github.com',
         port: 443,
@@ -149,23 +157,31 @@ export class AuthManager {
       };
 
       const req = https.request(options, (res) => {
+        console.log('GitHub response status:', res.statusCode);
         let data = '';
         res.on('data', (chunk) => data += chunk);
         res.on('end', () => {
+          console.log('GitHub response data:', data);
           try {
             const result = JSON.parse(data);
             if (res.statusCode === 200) {
               resolve(result);
             } else {
-              reject(new Error(result.error_description || 'Failed to initiate device flow'));
+              console.error('GitHub API error:', result);
+              reject(new Error(result.error_description || result.error || 'Failed to initiate device flow'));
             }
           } catch (error) {
-            reject(error);
+            console.error('Failed to parse GitHub response:', error);
+            reject(new Error('Invalid response from GitHub API'));
           }
         });
       });
 
-      req.on('error', reject);
+      req.on('error', (error) => {
+        console.error('Request error:', error);
+        reject(error);
+      });
+      
       req.write(postData);
       req.end();
     });

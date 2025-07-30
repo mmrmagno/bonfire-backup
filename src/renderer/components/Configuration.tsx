@@ -127,14 +127,14 @@ const Configuration: React.FC<ConfigurationProps> = ({ onConfigurationChange }) 
             <button
               onClick={handleDetectSavePath}
               disabled={detectStatus === 'detecting'}
-              className="flex items-center space-x-2 px-4 py-2 bg-orange-600 hover:bg-orange-700 rounded-md text-orange-100 transition-colors disabled:opacity-50"
+              className="flex items-center space-x-2 px-4 py-2 bg-orange-600 hover:bg-orange-700 rounded-md text-orange-100 transition-all duration-200 disabled:opacity-50 hover:scale-105 active:scale-95"
             >
               {detectStatus === 'detecting' ? (
-                <RefreshCw className="w-4 h-4 animate-spin" />
+                <RefreshCw className="w-4 h-4 animate-spin-fast" />
               ) : (
-                <RefreshCw className="w-4 h-4" />
+                <RefreshCw className="w-4 h-4 transition-transform hover:rotate-180 duration-300" />
               )}
-              <span>Auto-Detect</span>
+              <span>{detectStatus === 'detecting' ? 'Detecting...' : 'Auto-Detect'}</span>
             </button>
             
             {detectStatus === 'success' && (
@@ -246,26 +246,26 @@ const Configuration: React.FC<ConfigurationProps> = ({ onConfigurationChange }) 
         <button
           onClick={handleSaveConfig}
           disabled={saveStatus === 'saving' || !config.savePath || !config.repoUrl}
-          className="flex items-center space-x-2 px-8 py-3 bonfire-glow rounded-lg font-semibold text-orange-100 hover:shadow-xl hover:shadow-orange-500/30 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex items-center space-x-2 px-8 py-3 bonfire-glow rounded-lg font-semibold text-orange-100 hover:shadow-xl hover:shadow-orange-500/30 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed hover:scale-105 active:scale-95"
         >
           {saveStatus === 'saving' ? (
             <>
-              <RefreshCw className="w-4 h-4 animate-spin" />
-              <span>Saving...</span>
+              <RefreshCw className="w-4 h-4 animate-spin-fast" />
+              <span className="loading-dots">Saving</span>
             </>
           ) : saveStatus === 'success' ? (
             <>
-              <CheckCircle className="w-4 h-4" />
+              <CheckCircle className="w-4 h-4 text-green-400 animate-pulse-glow" />
               <span>Saved!</span>
             </>
           ) : saveStatus === 'error' ? (
             <>
-              <AlertCircle className="w-4 h-4" />
+              <AlertCircle className="w-4 h-4 text-red-400" />
               <span>Error</span>
             </>
           ) : (
             <>
-              <Save className="w-4 h-4" />
+              <Save className="w-4 h-4 transition-transform hover:scale-110" />
               <span>Save Configuration</span>
             </>
           )}

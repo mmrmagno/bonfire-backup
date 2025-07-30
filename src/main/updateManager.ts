@@ -26,6 +26,9 @@ export class UpdateManager extends EventEmitter {
       private: false
     });
 
+    // Enable checking for pre-releases (beta versions)
+    autoUpdater.allowPrerelease = true;
+
     // Event handlers
     autoUpdater.on('checking-for-update', () => {
       console.log('Checking for update...');

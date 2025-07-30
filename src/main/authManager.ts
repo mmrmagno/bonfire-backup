@@ -151,7 +151,7 @@ export class AuthManager {
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
-          'User-Agent': 'Bonfire-Backup/1.0.0-beta.2',
+          'User-Agent': 'Bonfire-Backup/1.0.0-beta.3',
           'Content-Length': Buffer.byteLength(postData)
         }
       };
@@ -237,7 +237,7 @@ export class AuthManager {
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
-          'User-Agent': 'Bonfire-Backup/1.0.0-beta.2',
+          'User-Agent': 'Bonfire-Backup/1.0.0-beta.3',
           'Content-Length': Buffer.byteLength(postData)
         }
       };
@@ -273,7 +273,7 @@ export class AuthManager {
     return new Promise((resolve, reject) => {
       const headers: { [key: string]: string | number } = {
         'Authorization': `token ${token}`,
-        'User-Agent': 'Bonfire-Backup/1.0.0-beta.2',
+        'User-Agent': 'Bonfire-Backup/1.0.0-beta.3',
         'Accept': 'application/vnd.github.v3+json'
       };
 

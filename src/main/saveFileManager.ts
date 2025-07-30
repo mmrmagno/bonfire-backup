@@ -83,7 +83,9 @@ export class SaveFileManager {
         file.toLowerCase().includes('test') && file.endsWith('.sl2')
       );
 
-      return hasSaveFiles;
+      // Allow empty directories (user might want to pull saves from git repo)
+      // Also allow directories with existing save files
+      return hasSaveFiles || files.length === 0;
     } catch (error) {
       return false;
     }

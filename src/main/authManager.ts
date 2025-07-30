@@ -32,7 +32,7 @@ export class AuthManager {
     this.store = store;
   }
 
-  async startGitHubAuth(): Promise<{ userCode: string; verificationUri: string }> {
+  async startGitHubAuth(): Promise<{ userCode: string; verificationUri: string; deviceCode: string; interval: number }> {
     try {
       console.log('Starting GitHub OAuth device flow...');
       const deviceAuth = await this.initiateDeviceFlow();
@@ -46,7 +46,9 @@ export class AuthManager {
       
       return {
         userCode: deviceAuth.user_code,
-        verificationUri: deviceAuth.verification_uri
+        verificationUri: deviceAuth.verification_uri,
+        deviceCode: deviceAuth.device_code,
+        interval: deviceAuth.interval
       };
     } catch (error) {
       console.error('Failed to start GitHub auth - detailed error:', error);

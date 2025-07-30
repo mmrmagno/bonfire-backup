@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Github, LogOut, Plus, List, Lock, Unlock, CheckCircle, RefreshCw } from 'lucide-react';
+import { Github, LogOut, Plus, List, Lock, Unlock, CheckCircle, RefreshCw, ExternalLink, Trash2, AlertTriangle } from 'lucide-react';
 import { GitHubUser } from '../../types';
 
 interface GitHubAuthProps {
@@ -19,6 +19,8 @@ const GitHubAuth: React.FC<GitHubAuthProps> = ({ onRepoSelected, selectedRepo })
   const [showCreateRepo, setShowCreateRepo] = useState(false);
   const [loadingRepos, setLoadingRepos] = useState(false);
   const [creatingRepo, setCreatingRepo] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deletingRepo, setDeletingRepo] = useState(false);
 
   const loadRepositories = useCallback(async () => {
     if (!authStatus.authenticated) return;
@@ -57,8 +59,8 @@ const GitHubAuth: React.FC<GitHubAuthProps> = ({ onRepoSelected, selectedRepo })
       setUserCode(authData.userCode);
       setVerificationUri(authData.verificationUri);
       
-      // Start polling for completion
-      pollForCompletion(authData.userCode, 5); // 5 second interval
+      // Start polling for completion with the correct device code and interval
+      pollForCompletion(authData.deviceCode, authData.interval);
     } catch (error) {
       console.error('Failed to start authentication:', error);
       alert('GitHub OAuth temporarily unavailable. Please use manual repository URL configuration in Advanced Settings below.');
@@ -144,8 +146,39 @@ const GitHubAuth: React.FC<GitHubAuthProps> = ({ onRepoSelected, selectedRepo })
       await loadRepositories();
     } catch (error) {
       console.error('Failed to create repository:', error);
+      alert('Failed to create repository. It may already exist.');
     } finally {
       setCreatingRepo(false);
+    }
+  };
+
+  const getCurrentRepo = () => {
+    if (!selectedRepo) return null;
+    return repositories.find(repo => repo.clone_url === selectedRepo);
+  };
+
+  const getRepoWebUrl = (cloneUrl: string) => {
+    // Convert clone URL to web URL
+    return cloneUrl.replace('.git', '').replace('https://github.com/', 'https://github.com/');
+  };
+
+  const handleDeleteRepo = async () => {
+    setDeletingRepo(true);
+    try {
+      // Note: GitHub API doesn't allow deleting repos via OAuth tokens with only repo scope
+      // This would require delete_repo scope which is not typically granted
+      alert('Repository deletion must be done manually on GitHub.com for security reasons. Visit the repository settings page.');
+      const currentRepo = getCurrentRepo();
+      if (currentRepo) {
+        const webUrl = getRepoWebUrl(currentRepo.clone_url);
+        window.open(`${webUrl}/settings`, '_blank');
+      }
+    } catch (error) {
+      console.error('Failed to delete repository:', error);
+      alert('Failed to delete repository');
+    } finally {
+      setDeletingRepo(false);
+      setShowDeleteConfirm(false);
     }
   };
 
@@ -389,10 +422,122 @@ const GitHubAuth: React.FC<GitHubAuthProps> = ({ onRepoSelected, selectedRepo })
         )}
 
         {selectedRepo && (
-          <div className="bg-green-900/20 border border-green-600 rounded-lg p-3">
-            <div className="flex items-center space-x-2">
-              <CheckCircle className="w-4 h-4 text-green-400" />
-              <span className="text-green-200 text-sm">Repository selected</span>
+          <div className="bg-green-900/20 border border-green-600 rounded-lg p-4">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center space-x-2">
+                <CheckCircle className="w-4 h-4 text-green-400" />
+                <span className="text-green-200 text-sm font-medium">Active Repository</span>
+              </div>
+            </div>
+            
+            {(() => {
+              const currentRepo = getCurrentRepo();
+              if (currentRepo) {
+                const webUrl = getRepoWebUrl(currentRepo.clone_url);
+                return (
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-2">
+                        {currentRepo.private ? (
+                          <Lock className="w-4 h-4 text-orange-400" />
+                        ) : (
+                          <Unlock className="w-4 h-4 text-gray-400" />
+                        )}
+                        <span className="text-green-100 font-mono text-sm">{currentRepo.name}</span>
+                      </div>
+                      
+                      <a
+                        href={webUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center space-x-1 text-orange-400 hover:text-orange-300 text-sm transition-colors"
+                      >
+                        <ExternalLink className="w-4 h-4" />
+                        <span>View on GitHub</span>
+                      </a>
+                    </div>
+                    
+                    <div className="flex space-x-2">
+                      <button
+                        onClick={() => {
+                          setShowRepoList(true);
+                          loadRepositories();
+                        }}
+                        className="flex items-center space-x-2 px-3 py-2 bg-blue-600 hover:bg-blue-700 rounded-md text-blue-100 text-sm transition-colors"
+                      >
+                        <List className="w-4 h-4" />
+                        <span>Switch Repository</span>
+                      </button>
+                      
+                      <button
+                        onClick={() => setShowCreateRepo(true)}
+                        className="flex items-center space-x-2 px-3 py-2 bg-orange-600 hover:bg-orange-700 rounded-md text-orange-100 text-sm transition-colors"
+                      >
+                        <Plus className="w-4 h-4" />
+                        <span>Create New</span>
+                      </button>
+                      
+                      <button
+                        onClick={() => setShowDeleteConfirm(true)}
+                        className="flex items-center space-x-2 px-3 py-2 bg-red-600 hover:bg-red-700 rounded-md text-red-100 text-sm transition-colors"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                        <span>Delete</span>
+                      </button>
+                    </div>
+                  </div>
+                );
+              }
+              return (
+                <div className="text-green-200 text-sm">Repository selected: {selectedRepo}</div>
+              );
+            })()}
+          </div>
+        )}
+
+        {showDeleteConfirm && (
+          <div className="bg-red-900/20 border border-red-600 rounded-lg p-4">
+            <div className="flex items-center space-x-2 mb-3">
+              <AlertTriangle className="w-5 h-5 text-red-400" />
+              <h3 className="text-red-200 font-medium">Delete Repository</h3>
+            </div>
+            
+            <div className="space-y-3">
+              <p className="text-red-200 text-sm">
+                <strong>Warning:</strong> This will permanently delete the repository and all its data from GitHub. 
+                This action cannot be undone.
+              </p>
+              
+              <p className="text-red-300 text-sm">
+                Repository: <strong>{getCurrentRepo()?.name}</strong>
+              </p>
+              
+              <div className="flex space-x-2">
+                <button
+                  onClick={handleDeleteRepo}
+                  disabled={deletingRepo}
+                  className="flex items-center space-x-2 px-4 py-2 bg-red-600 hover:bg-red-700 rounded-md text-red-100 transition-colors disabled:opacity-50"
+                >
+                  {deletingRepo ? (
+                    <>
+                      <RefreshCw className="w-4 h-4 animate-spin-fast" />
+                      <span>Opening GitHub...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Trash2 className="w-4 h-4" />
+                      <span>Open GitHub Settings</span>
+                    </>
+                  )}
+                </button>
+                
+                <button
+                  onClick={() => setShowDeleteConfirm(false)}
+                  className="px-4 py-2 bg-gray-700 hover:bg-gray-600 border border-gray-600 rounded-md text-gray-200 transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
             </div>
           </div>
         )}

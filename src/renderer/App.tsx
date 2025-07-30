@@ -55,7 +55,8 @@ function App() {
   const checkConfiguration = async () => {
     try {
       const config = await window.electronAPI.getConfig();
-      setIsConfigured(config.savePath && config.repoUrl);
+      // Check if save path is configured (repo URL is optional for local backups)
+      setIsConfigured(!!config.savePath);
     } catch (error) {
       console.error('Failed to check configuration:', error);
     }

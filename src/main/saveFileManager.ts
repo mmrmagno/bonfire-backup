@@ -74,11 +74,13 @@ export class SaveFileManager {
 
       const files = await fs.readdir(savePath);
       
-      // Check for Dark Souls III save file patterns
+      // Check for Dark Souls III save file patterns or test files
       const hasSaveFiles = files.some(file => 
         file.endsWith('.sl2') || 
         file.includes('DS30000') ||
-        file.includes('DRAKS0005')
+        file.includes('DRAKS0005') ||
+        (file.toLowerCase().includes('test') && file.endsWith('.sl2')) ||
+        file.toLowerCase().includes('test') && file.endsWith('.sl2')
       );
 
       return hasSaveFiles;
@@ -97,7 +99,8 @@ export class SaveFileManager {
       const saveFiles = files.filter(file => 
         file.endsWith('.sl2') || 
         file.includes('DS30000') ||
-        file.includes('DRAKS0005')
+        file.includes('DRAKS0005') ||
+        (file.toLowerCase().includes('test') && file.endsWith('.sl2'))
       );
 
       for (const file of saveFiles) {
@@ -161,7 +164,8 @@ export class SaveFileManager {
       const saveFiles = backupFiles.filter(file => 
         file.endsWith('.sl2') || 
         file.includes('DS30000') ||
-        file.includes('DRAKS0005')
+        file.includes('DRAKS0005') ||
+        (file.toLowerCase().includes('test') && file.endsWith('.sl2'))
       );
 
       if (saveFiles.length === 0) {
@@ -219,7 +223,8 @@ export class SaveFileManager {
       const saveFiles = backupFiles.filter(file => 
         file.endsWith('.sl2') || 
         file.includes('DS30000') ||
-        file.includes('DRAKS0005')
+        file.includes('DRAKS0005') ||
+        (file.toLowerCase().includes('test') && file.endsWith('.sl2'))
       );
 
       let lastBackup: string | undefined;

@@ -13,11 +13,18 @@ export class GitManager {
 
   private getAuthenticatedUrl(url: string): string {
     if (this.token && url.startsWith('https://github.com/')) {
-      // Convert HTTPS URL to authenticated URL
+      // Convert HTTPS URL to authenticated URL with token
       const urlParts = url.replace('https://github.com/', '').replace('.git', '');
+      // Use token as username for GitHub authentication
       return `https://${this.token}@github.com/${urlParts}.git`;
     }
     return url;
+  }
+
+  private ensureTokenSet() {
+    if (!this.token) {
+      console.warn('No GitHub token set for Git operations');
+    }
   }
 
   async initializeRepository(backupPath: string, repoUrl?: string): Promise<boolean> {
@@ -165,6 +172,9 @@ node_modules/
         if (errorMessage.includes('master') || errorMessage.includes('main')) {
           console.error('❌ Push failed due to branch mismatch. Your local repository uses a different branch than your remote repository.');
           throw new Error('Push failed: Branch mismatch between local and remote repository. Make sure your remote repository uses the "main" branch.');
+        } else if (errorMessage.includes('403') || errorMessage.includes('401') || errorMessage.includes('authentication')) {
+          console.error('❌ Push failed due to authentication. Token may be expired or invalid.');
+          throw new Error('Authentication failed: Your GitHub token may be expired. Please reconnect your GitHub account.');
         } else {
           console.warn('Push failed, but commit was successful:', pushError);
           throw new Error('Failed to push to remote repository. Check your repository URL and credentials.');

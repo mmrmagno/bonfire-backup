@@ -87,6 +87,20 @@ const GitHubAuth: React.FC<GitHubAuthProps> = ({ onRepoSelected, selectedRepo })
           setUserCode('');
           setVerificationUri('');
           await loadAuthStatus();
+          
+          // Auto-create repository for first-time users
+          if (!selectedRepo) {
+            try {
+              const defaultRepoName = 'ds3-savefiles';
+              console.log('Auto-creating repository:', defaultRepoName);
+              const repoUrl = await window.electronAPI.createGitHubRepo(defaultRepoName, true);
+              onRepoSelected(repoUrl);
+              console.log('Auto-created repository:', repoUrl);
+            } catch (repoError) {
+              console.log('Auto repository creation failed (may already exist):', repoError);
+              // Don't fail the whole flow if repo creation fails
+            }
+          }
         } else {
           setTimeout(poll, interval * 1000);
         }

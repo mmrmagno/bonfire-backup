@@ -245,7 +245,7 @@ const Configuration: React.FC<ConfigurationProps> = ({ onConfigurationChange }) 
       <div className="flex justify-center">
         <button
           onClick={handleSaveConfig}
-          disabled={saveStatus === 'saving' || !config.savePath || !config.repoUrl}
+          disabled={saveStatus === 'saving' || !config.savePath}
           className="flex items-center space-x-2 px-8 py-3 bonfire-glow rounded-lg font-semibold text-orange-100 hover:shadow-xl hover:shadow-orange-500/30 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed hover:scale-105 active:scale-95"
         >
           {saveStatus === 'saving' ? (

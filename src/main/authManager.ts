@@ -25,7 +25,7 @@ interface GitHubUser {
 export class AuthManager {
   private store: Store;
   private mainWindow: BrowserWindow;
-  private readonly clientId = 'Ov23liDJlBwmAMiwhTMt'; // TODO: Replace with real GitHub OAuth App Client ID
+  private readonly clientId = 'Ov23licTeg98zrKoXTGu'; // Bonfire Backup GitHub OAuth App
 
   constructor(mainWindow: BrowserWindow, store: Store) {
     this.mainWindow = mainWindow;
@@ -151,7 +151,7 @@ export class AuthManager {
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
-          'User-Agent': 'Bonfire-Backup/1.0.0-beta.3',
+          'User-Agent': 'Bonfire-Backup/1.0.0-beta.4',
           'Content-Length': Buffer.byteLength(postData)
         }
       };
@@ -237,7 +237,7 @@ export class AuthManager {
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
-          'User-Agent': 'Bonfire-Backup/1.0.0-beta.3',
+          'User-Agent': 'Bonfire-Backup/1.0.0-beta.4',
           'Content-Length': Buffer.byteLength(postData)
         }
       };
@@ -273,7 +273,7 @@ export class AuthManager {
     return new Promise((resolve, reject) => {
       const headers: { [key: string]: string | number } = {
         'Authorization': `token ${token}`,
-        'User-Agent': 'Bonfire-Backup/1.0.0-beta.3',
+        'User-Agent': 'Bonfire-Backup/1.0.0-beta.4',
         'Accept': 'application/vnd.github.v3+json'
       };
 

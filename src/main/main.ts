@@ -102,6 +102,12 @@ function setupAutoSync() {
       
       autoSyncInterval = setTimeout(async () => {
         try {
+          // Ensure GitManager has the latest token for auto-sync
+          const token = authManager.getStoredToken();
+          if (token) {
+            gitManager.setToken(token);
+          }
+          
           await saveFileManager.syncSaves(
             config.savePath as string, 
             (config.backupPath as string) || path.join(os.homedir(), '.bonfire-backup'), 

@@ -79,3 +79,6 @@ app/renderer.js.map
 # Temporary folders
 tmp/
 temp/
+
+# Testing files
+TESTING_CHECKLIST.md

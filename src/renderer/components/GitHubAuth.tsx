@@ -112,7 +112,8 @@ const GitHubAuth: React.FC<GitHubAuthProps> = ({ onRepoSelected, selectedRepo })
         setAuthInProgress(false);
         setUserCode('');
         setVerificationUri('');
-        alert(`GitHub authentication failed: ${error.message || 'Unknown error'}`);
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        alert(`GitHub authentication failed: ${errorMessage}`);
       }
     };
 

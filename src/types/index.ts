@@ -20,7 +20,7 @@ export interface ElectronAPI {
   getUpdateStatus: () => Promise<UpdateStatus>;
   
   // GitHub OAuth functionality
-  startGitHubAuth: () => Promise<{ userCode: string; verificationUri: string }>;
+  startGitHubAuth: () => Promise<{ userCode: string; verificationUri: string; deviceCode: string; interval: number }>;
   completeGitHubAuth: (deviceCode: string, interval: number) => Promise<boolean>;
   createGitHubRepo: (repoName: string, isPrivate: boolean) => Promise<string>;
   listGitHubRepos: () => Promise<Array<{ name: string; clone_url: string; private: boolean }>>;

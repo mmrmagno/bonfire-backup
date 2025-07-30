@@ -16,6 +16,23 @@ contextBridge.exposeInMainWorld('electronAPI', {
   minimizeWindow: () => ipcRenderer.invoke('minimize-window'),
   maximizeWindow: () => ipcRenderer.invoke('maximize-window'),
   closeWindow: () => ipcRenderer.invoke('close-window'),
+  
+  // Update functionality
+  checkForUpdates: () => ipcRenderer.invoke('check-for-updates'),
+  downloadUpdate: () => ipcRenderer.invoke('download-update'),
+  installUpdate: () => ipcRenderer.invoke('install-update'),
+  getUpdateStatus: () => ipcRenderer.invoke('get-update-status'),
+  
+  // GitHub OAuth functionality
+  startGitHubAuth: () => ipcRenderer.invoke('start-github-auth'),
+  completeGitHubAuth: (deviceCode: string, interval: number) => ipcRenderer.invoke('complete-github-auth', deviceCode, interval),
+  createGitHubRepo: (repoName: string, isPrivate: boolean) => ipcRenderer.invoke('create-github-repo', repoName, isPrivate),
+  listGitHubRepos: () => ipcRenderer.invoke('list-github-repos'),
+  getAuthStatus: () => ipcRenderer.invoke('get-auth-status'),
+  logoutGitHub: () => ipcRenderer.invoke('logout-github'),
+  
+  // App info
+  getAppVersion: () => ipcRenderer.invoke('get-app-version'),
 });
 
 console.log('Preload script completed, electronAPI exposed');

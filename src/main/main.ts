@@ -5,11 +5,15 @@ import * as os from 'os';
 import Store from 'electron-store';
 import { SaveFileManager } from './saveFileManager';
 import { GitManager } from './gitManager';
+import { UpdateManager } from './updateManager';
+import { AuthManager } from './authManager';
 
 const store = new Store();
 let mainWindow: BrowserWindow;
 let saveFileManager: SaveFileManager;
 let gitManager: GitManager;
+let updateManager: UpdateManager;
+let authManager: AuthManager;
 
 function createWindow(): void {
   mainWindow = new BrowserWindow({
@@ -67,9 +71,16 @@ app.whenReady().then(() => {
   
   saveFileManager = new SaveFileManager();
   gitManager = new GitManager();
+  updateManager = new UpdateManager(mainWindow);
+  authManager = new AuthManager(mainWindow, store);
 
   // Set up auto-sync if enabled
   setupAutoSync();
+
+  // Check for updates on startup (after 5 seconds)
+  setTimeout(() => {
+    updateManager.checkForUpdates();
+  }, 5000);
 
   app.on('activate', function () {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
@@ -164,6 +175,12 @@ ipcMain.handle('init-git-repo', async (_, repoUrl: string) => {
   const savePath = store.get('savePath') as string;
   const backupPath = store.get('backupPath') as string || path.join(os.homedir(), '.bonfire-backup');
   
+  // Set GitHub token if available
+  const token = authManager.getStoredToken();
+  if (token) {
+    gitManager.setToken(token);
+  }
+  
   return await gitManager.initializeRepository(backupPath, repoUrl);
 });
 
@@ -174,6 +191,12 @@ ipcMain.handle('sync-saves', async (_, mode: 'manual' | 'auto') => {
   
   if (!savePath) {
     throw new Error('Save path not configured');
+  }
+  
+  // Set GitHub token if available
+  const token = authManager.getStoredToken();
+  if (token) {
+    gitManager.setToken(token);
   }
   
   // Initialize git repository if not already done
@@ -231,4 +254,52 @@ ipcMain.handle('get-backup-info', async () => {
 
 ipcMain.handle('pull-from-remote', async () => {
   return await gitManager.syncWithRemote();
+});
+
+// Update management handlers
+ipcMain.handle('check-for-updates', async () => {
+  return await updateManager.checkForUpdates();
+});
+
+ipcMain.handle('download-update', async () => {
+  return await updateManager.downloadUpdate();
+});
+
+ipcMain.handle('install-update', async () => {
+  await updateManager.installUpdate();
+});
+
+ipcMain.handle('get-update-status', () => {
+  return updateManager.getUpdateStatus();
+});
+
+// GitHub OAuth handlers
+ipcMain.handle('start-github-auth', async () => {
+  return await authManager.startGitHubAuth();
+});
+
+ipcMain.handle('complete-github-auth', async (_, deviceCode: string, interval: number) => {
+  return await authManager.completeGitHubAuth(deviceCode, interval);
+});
+
+ipcMain.handle('create-github-repo', async (_, repoName: string, isPrivate: boolean) => {
+  return await authManager.createRepository(repoName, isPrivate);
+});
+
+ipcMain.handle('list-github-repos', async () => {
+  return await authManager.listRepositories();
+});
+
+ipcMain.handle('get-auth-status', () => {
+  return authManager.getAuthStatus();
+});
+
+ipcMain.handle('logout-github', () => {
+  authManager.logout();
+  return true;
+});
+
+// App info handlers
+ipcMain.handle('get-app-version', () => {
+  return app.getVersion();
 });

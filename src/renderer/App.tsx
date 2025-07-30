@@ -4,6 +4,7 @@ import Dashboard from './components/Dashboard';
 import Configuration from './components/Configuration';
 import SyncStatus from './components/SyncStatus';
 import TitleBar from './components/TitleBar';
+import UpdateNotification from './components/UpdateNotification';
 
 type Tab = 'dashboard' | 'configuration' | 'sync';
 
@@ -11,6 +12,7 @@ function App() {
   const [activeTab, setActiveTab] = useState<Tab>('dashboard');
   const [isConfigured, setIsConfigured] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [appVersion, setAppVersion] = useState<string>('');
 
   useEffect(() => {
     const initApp = async () => {
@@ -31,6 +33,15 @@ function App() {
         }
         console.log('Checking configuration...');
         await checkConfiguration();
+        
+        // Load app version
+        try {
+          const version = await window.electronAPI.getAppVersion();
+          setAppVersion(version);
+        } catch (error) {
+          console.error('Failed to load app version:', error);
+        }
+        
         console.log('App initialized successfully');
       } catch (error) {
         console.error('App initialization failed:', error);
@@ -116,6 +127,7 @@ function App() {
   return (
     <div className="h-screen flex flex-col bg-gray-900 text-orange-100 overflow-hidden">
       <TitleBar />
+      <UpdateNotification />
       
       {/* Main Content */}
       <div className="flex flex-1 overflow-hidden">
@@ -129,7 +141,9 @@ function App() {
               </div>
               <div>
                 <h1 className="font-medieval text-lg font-bold flame-text">Bonfire Backup</h1>
-                <p className="text-xs text-orange-300/70">Dark Souls III Save Sync</p>
+                <p className="text-xs text-orange-300/70">
+                  Dark Souls III Save Sync {appVersion && `• v${appVersion}`}
+                </p>
               </div>
             </div>
           </div>
@@ -158,7 +172,7 @@ function App() {
           </nav>
 
           {/* Status Indicator */}
-          <div className="p-4 border-t border-orange-500/20">
+          <div className="p-4 border-t border-orange-500/20 space-y-2">
             <div className={`flex items-center space-x-2 text-sm ${
               isConfigured ? 'text-green-400' : 'text-yellow-400'
             }`}>
@@ -166,6 +180,11 @@ function App() {
                 isConfigured ? 'bg-green-400 shadow-lg shadow-green-400/50' : 'bg-yellow-400 shadow-lg shadow-yellow-400/50'
               }`} />
               <span>{isConfigured ? 'Configured' : 'Setup Required'}</span>
+            </div>
+            
+            {/* Version Display */}
+            <div className="text-xs text-gray-500">
+              <span>v{appVersion}</span>
             </div>
           </div>
         </div>

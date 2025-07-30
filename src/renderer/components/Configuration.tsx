@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Folder, GitBranch, Settings, Save, RefreshCw, CheckCircle, AlertCircle } from 'lucide-react';
+import { Folder, Settings, Save, RefreshCw, CheckCircle, AlertCircle } from 'lucide-react';
 import { AppConfig } from '../../types';
+import GitHubAuth from './GitHubAuth';
 
 interface ConfigurationProps {
   onConfigurationChange: () => void;
@@ -153,17 +154,23 @@ const Configuration: React.FC<ConfigurationProps> = ({ onConfigurationChange }) 
         </div>
       </div>
 
-      {/* Git Repository Section */}
+      {/* GitHub Repository Section */}
+      <GitHubAuth 
+        onRepoSelected={(repoUrl) => updateConfig('repoUrl', repoUrl)}
+        selectedRepo={config.repoUrl}
+      />
+
+      {/* Advanced Repository Settings */}
       <div className="ember-border rounded-lg p-6">
         <div className="flex items-center space-x-3 mb-4">
-          <GitBranch className="w-6 h-6 text-orange-400" />
-          <h2 className="text-xl font-semibold text-orange-200">Git Repository</h2>
+          <Settings className="w-6 h-6 text-orange-400" />
+          <h2 className="text-xl font-semibold text-orange-200">Advanced Repository Settings</h2>
         </div>
         
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-orange-300 mb-2">
-              Repository URL
+              Custom Repository URL (Optional)
             </label>
             <input
               type="text"
@@ -173,13 +180,13 @@ const Configuration: React.FC<ConfigurationProps> = ({ onConfigurationChange }) 
               className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-md text-orange-100 placeholder-gray-400 focus:outline-none focus:border-orange-500"
             />
             <p className="text-sm text-gray-400 mt-1">
-              Git repository URL where your save files will be backed up
+              Override the selected GitHub repository with a custom URL
             </p>
           </div>
 
           <div>
             <label className="block text-sm font-medium text-orange-300 mb-2">
-              Backup Directory (Optional)
+              Local Backup Directory (Optional)
             </label>
             <input
               type="text"
@@ -188,6 +195,9 @@ const Configuration: React.FC<ConfigurationProps> = ({ onConfigurationChange }) 
               placeholder="Leave empty for default (~/.bonfire-backup)"
               className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-md text-orange-100 placeholder-gray-400 focus:outline-none focus:border-orange-500"
             />
+            <p className="text-sm text-gray-400 mt-1">
+              Local directory where backups are stored before syncing to repository
+            </p>
           </div>
         </div>
       </div>
@@ -195,7 +205,7 @@ const Configuration: React.FC<ConfigurationProps> = ({ onConfigurationChange }) 
       {/* Sync Settings Section */}
       <div className="ember-border rounded-lg p-6">
         <div className="flex items-center space-x-3 mb-4">
-          <Settings className="w-6 h-6 text-orange-400" />
+          <RefreshCw className="w-6 h-6 text-orange-400" />
           <h2 className="text-xl font-semibold text-orange-200">Sync Settings</h2>
         </div>
         

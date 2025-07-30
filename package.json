@@ -1,6 +1,6 @@
 {
   "name": "bonfire-backup",
-  "version": "1.0.4",
+  "version": "1.0.0-beta.1",
   "description": "Dark Souls III save file backup and sync application",
   "main": "dist/main.js",
   "scripts": {
@@ -28,7 +28,14 @@
     ],
     "win": {
       "target": "nsis",
-      "icon": "assets/icon.png"
+      "icon": "assets/icon.png",
+      "publish": [
+        {
+          "provider": "github",
+          "owner": "mmrmagno",
+          "repo": "bonfire-backup"
+        }
+      ]
     },
     "linux": {
       "target": [
@@ -41,12 +48,26 @@
       ],
       "icon": "assets/icon.png",
       "category": "Utility",
-      "executableName": "bonfire-backup"
+      "executableName": "bonfire-backup",
+      "publish": [
+        {
+          "provider": "github",
+          "owner": "mmrmagno",
+          "repo": "bonfire-backup"
+        }
+      ]
     },
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true
-    }
+    },
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "mmrmagno",
+        "repo": "bonfire-backup"
+      }
+    ]
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
@@ -70,6 +91,7 @@
   "dependencies": {
     "chokidar": "^3.5.0",
     "electron-store": "^8.1.0",
+    "electron-updater": "^6.6.2",
     "lucide-react": "^0.263.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",

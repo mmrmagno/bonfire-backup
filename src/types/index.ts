@@ -12,6 +12,23 @@ export interface ElectronAPI {
   minimizeWindow: () => Promise<void>;
   maximizeWindow: () => Promise<void>;
   closeWindow: () => Promise<void>;
+  
+  // Update functionality
+  checkForUpdates: () => Promise<boolean>;
+  downloadUpdate: () => Promise<boolean>;
+  installUpdate: () => Promise<void>;
+  getUpdateStatus: () => Promise<UpdateStatus>;
+  
+  // GitHub OAuth functionality
+  startGitHubAuth: () => Promise<{ userCode: string; verificationUri: string }>;
+  completeGitHubAuth: (deviceCode: string, interval: number) => Promise<boolean>;
+  createGitHubRepo: (repoName: string, isPrivate: boolean) => Promise<string>;
+  listGitHubRepos: () => Promise<Array<{ name: string; clone_url: string; private: boolean }>>;
+  getAuthStatus: () => Promise<{ authenticated: boolean; user?: GitHubUser }>;
+  logoutGitHub: () => Promise<boolean>;
+  
+  // App info
+  getAppVersion: () => Promise<string>;
 }
 
 export interface SyncStatus {
@@ -27,6 +44,17 @@ export interface BackupInfo {
   fileCount: number;
   lastBackup?: string;
   files: string[];
+}
+
+export interface UpdateStatus {
+  updateAvailable: boolean;
+  updateDownloaded: boolean;
+}
+
+export interface GitHubUser {
+  login: string;
+  name: string;
+  avatar_url: string;
 }
 
 export interface AppConfig {

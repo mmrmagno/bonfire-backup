@@ -5,6 +5,20 @@ import * as path from 'path';
 export class GitManager {
   private git?: SimpleGit;
   private repoPath?: string;
+  private token?: string;
+
+  setToken(token: string) {
+    this.token = token;
+  }
+
+  private getAuthenticatedUrl(url: string): string {
+    if (this.token && url.startsWith('https://github.com/')) {
+      // Convert HTTPS URL to authenticated URL
+      const urlParts = url.replace('https://github.com/', '').replace('.git', '');
+      return `https://${this.token}@github.com/${urlParts}.git`;
+    }
+    return url;
+  }
 
   async initializeRepository(backupPath: string, repoUrl?: string): Promise<boolean> {
     try {
@@ -66,7 +80,9 @@ node_modules/
         } catch (error) {
           // Remote doesn't exist, ignore
         }
-        await this.git.addRemote('origin', repoUrl);
+        
+        const authenticatedUrl = this.getAuthenticatedUrl(repoUrl);
+        await this.git.addRemote('origin', authenticatedUrl);
         
         // If it's a new repo, try to push the initial commit
         if (isNewRepo) {
